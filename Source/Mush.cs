@@ -1,8 +1,10 @@
 namespace Source
 {
-    //  Class to convert strings to mush, and back out again
-    //  The idea is that a word with a maximum length of 16 characters can be encoded,
-    //  such that it can easily be checked if it contains certain letters or not
+    /// <summary>
+    /// Class to convert strings to mush, and back out again
+    /// The idea is that a word with a maximum length of 16 characters can be encoded,
+    /// such that it can easily be checked if it contains certain letters or not
+    /// </summary>
     class Mush : IComparable
     {
         private static readonly int maxWordLength = 16;
@@ -10,6 +12,7 @@ namespace Source
         public static readonly int byteCount = 83;
         public static readonly int letterCount = 26;
 
+        //  Indicates which letters are in this mush
         //  Uses least significant bit to indicate mush has character 'a'
         //  Then works its way up to 'z'. Some bits unused
         private Int32 key;
@@ -18,10 +21,10 @@ namespace Source
         //  Eg. 'aardvark' would become '00100011' (truncated) and so on
         private Int16[] letters;
 
-        //  Indicates that this mush is invlaid for some reason
+        //  Indicates that this mush is invalid for some reason
         private bool badMush = false;
 
-        //  Overall length of mush
+        //  Overall length of word represented by the mush
         public byte length { get; internal set; }
 
         //  How many of each letter there is
@@ -77,7 +80,10 @@ namespace Source
             {
                 if (word.Contains(letter))
                 {
-                    result |= (1 << letter);
+                    // TODO Im pretty sure I found a bug and the commented code is the more correct version
+                    // Console.WriteLine((int)letter - 'a');
+                    // result |= 1 << (letter - 'a');
+                    result |= 1 << letter;
                 }
             }
 

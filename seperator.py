@@ -1,6 +1,9 @@
 import sys
 import os
 
+# Accepts a single file of words
+# Writes out a directory with files for each word length
+
 if len(sys.argv)==2:
     # Open file to split
     file = open(sys.argv[1], "r")

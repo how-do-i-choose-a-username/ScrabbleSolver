@@ -1,11 +1,15 @@
 namespace Source
 {
+    /// <summary>
+    /// Load the config file which specifies where to load other files from
+    /// </summary>
     class Config
     {
         private string configFileName = "program.config";
 
         public string path { get; internal set; } = "";
         public string mushGroupPrefix { get; internal set; } = "";
+        public string powerUpsFile { get; internal set; } = "powerups.config";
 
         public void LoadConfig()
         {
@@ -18,13 +22,19 @@ namespace Source
 
                     if (splitLine.Length == 2)
                     {
-                        switch (splitLine[0])
+                        string key = splitLine[0];
+                        string value = splitLine[1];
+
+                        switch (key)
                         {
                             case "mushes":
-                                path = splitLine[1];
+                                path = value;
                                 break;
                             case "mushGroupPrefix":
-                                mushGroupPrefix = splitLine[1];
+                                mushGroupPrefix = value;
+                                break;
+                            case "powerups":
+                                powerUpsFile = value;
                                 break;
                             default:
                                 break;

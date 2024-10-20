@@ -1,6 +1,9 @@
 import sys
 import re
 
+# Accepts a single file of words
+# Outputs a single file containing valid scrabble words
+
 if len(sys.argv)==2:
     # Do thing, open file and remove bad words
     file = open(sys.argv[1], "r")

@@ -1,7 +1,8 @@
-using System.IO;
-
 namespace Source
 {
+    /// <summary>
+    /// Accepts a directory of word lists. Mushifies them and saves the resulting mushes
+    /// </summary>
     class Mushifier
     {
         public void MushifyDirectory(string pathToOpen, string pathToWrite)

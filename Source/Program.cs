@@ -6,12 +6,12 @@ namespace Source
     {
         static void Main(string[] args)
         {
+            Config config = new Config();
+            config.LoadConfig();
+
             //  Make sure that the length is appropriate to what we actually have as data
             if (args.Length == 1 && args[0].Length <= 15)
             {
-                Config config = new Config();
-                config.LoadConfig();
-
                 MushMatcher matcher = new MushMatcher(config);
                 
                 List<string> matches = matcher.FindMatchStrings(args[0], true);
@@ -33,7 +33,7 @@ namespace Source
             else if (args.Length == 3)
             {
                 ScrabbleGame game = new ScrabbleGame();
-                game.LoadScrabblePowerUps();
+                game.LoadScrabblePowerUps(config.powerUpsFile);
 
                 game.LoadScrabbleLetters(args[0]);
 
