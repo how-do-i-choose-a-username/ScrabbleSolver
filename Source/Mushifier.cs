@@ -9,6 +9,10 @@ namespace Source
         {
             Directory.CreateDirectory(pathToWrite);
 
+            // Remove path seperators from the end of the path
+            pathToOpen = pathToOpen.TrimEnd('\\').TrimEnd('/');
+            pathToWrite = pathToWrite.TrimEnd('\\').TrimEnd('/');
+
             foreach (string fileName in Directory.EnumerateFiles(pathToOpen))
             {   
                 string outputPath = fileName.Replace(pathToOpen, pathToWrite);

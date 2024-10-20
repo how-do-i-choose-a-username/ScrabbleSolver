@@ -80,10 +80,7 @@ namespace Source
             {
                 if (word.Contains(letter))
                 {
-                    // TODO Im pretty sure I found a bug and the commented code is the more correct version
-                    // Console.WriteLine((int)letter - 'a');
-                    // result |= 1 << (letter - 'a');
-                    result |= 1 << letter;
+                    result |= 1 << (letter - 'a');
                 }
             }
 
