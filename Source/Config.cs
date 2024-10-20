@@ -3,7 +3,7 @@ namespace Source
     /// <summary>
     /// Load the config file which specifies where to load other files from
     /// </summary>
-    class Config
+    public class Config
     {
         private string configFileName = "program.config";
 

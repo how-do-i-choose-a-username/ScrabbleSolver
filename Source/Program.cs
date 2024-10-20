@@ -32,41 +32,21 @@ namespace Source
             }
             else if (args.Length == 3)
             {
-                ScrabbleGame game = new ScrabbleGame();
+                ScrabbleGame game = new ScrabbleGame(config);
                 game.LoadScrabblePowerUps(config.powerUpsFile);
 
                 game.LoadScrabbleLetters(args[0]);
+
+                game.SolveGame(args[1]);
 
                 game.OutputBoardToConsole();
             }
             else
             {
-                Console.BackgroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Operating modes:");
-                Console.BackgroundColor = ConsoleColor.Black;
                 Console.WriteLine("Provide a character string (max length 15), and the program will search the mushes for a match.");
                 Console.WriteLine("Provide two strings and it will mushify from the first directory to the second.");
-            }
-        }
-
-        private class SortSizeLetters : IComparer<string>
-        {
-            int IComparer<string>.Compare(string? a, string? b)
-            {
-                int result;
-
-                //  Make sure a and b are not null
-                a = a == null ? a = "" : a;
-                b = b == null ? b = "" : b;
-
-                result = a.Length.CompareTo(b.Length);
-
-                if (result == 0)
-                {
-                    result = a.CompareTo(b);
-                }
-
-                return result;
+                Console.WriteLine("Provide three strings to solve a game. The first string is the game board directory, the second is the letters to use, the third does nothing.");
             }
         }
     }

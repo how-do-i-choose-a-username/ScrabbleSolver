@@ -1,3 +1,5 @@
+using Source;
+
 namespace Scrabble
 {
     enum PowerUp { None, DoubleLetter, TrippleLetter, DoubleWord, TrippleWord }
@@ -10,8 +12,12 @@ namespace Scrabble
         private PowerUp[,] powerUps;
         private char[,] lettersOnBoard;
 
-        public ScrabbleGame()
+        private Config config;
+
+        public ScrabbleGame(Config config)
         {
+            this.config = config;
+
             powerUps = new PowerUp[boardDimensions, boardDimensions];
             lettersOnBoard = new char[boardDimensions, boardDimensions];
 
@@ -19,7 +25,7 @@ namespace Scrabble
             {
                 for (int j = 0; j < boardDimensions; j++)
                 {
-                    lettersOnBoard[i,j] = ' ';
+                    lettersOnBoard[i, j] = ' ';
                 }
             }
         }
@@ -55,8 +61,6 @@ namespace Scrabble
                                 break;
                         }
 
-                        // Console.WriteLine(i + ": " + character);
-
                         powerUps[i % boardDimensions, i / boardDimensions] = powerUp;
 
                         i += 1;
@@ -73,13 +77,37 @@ namespace Scrabble
                 String? line;
                 while ((line = streamReader.ReadLine()) != null && lineNumber < boardDimensions)
                 {
+                    line = line.ToLower();
+
                     for (int i = 0; i < line.Length && i < boardDimensions; i++)
                     {
-                        lettersOnBoard[lineNumber, i] = line[i];
+                        if (line[i] >= 'a' && line[i] <= 'z')
+                        {
+                            lettersOnBoard[lineNumber, i] = line[i];
+                        }
                     }
 
                     lineNumber += 1;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Calculate the best possible placement of the provided letters
+        /// </summary>
+        /// <param name="letters"></param>
+        public void SolveGame(string letters) 
+        {
+            MushMatcher matcher = new MushMatcher(config);
+                
+            List<string> matches = matcher.FindMatchStrings(letters, true);
+
+            matches.Sort(new SortSizeLetters());
+
+            Console.WriteLine("Found the following matches:");
+            foreach (string match in matches)
+            {
+                Console.WriteLine(match);
             }
         }
 
@@ -95,7 +123,7 @@ namespace Scrabble
                 {
                     Console.ForegroundColor = ConsoleColor.White;
 
-                    switch (powerUps[i,j])
+                    switch (powerUps[i, j])
                     {
                         case PowerUp.None:
                             Console.BackgroundColor = ConsoleColor.White;
@@ -115,7 +143,7 @@ namespace Scrabble
                             break;
                     }
 
-                    Console.Write(lettersOnBoard[i,j]);
+                    Console.Write(lettersOnBoard[i, j]);
                     Console.Write(' ');
                 }
 
