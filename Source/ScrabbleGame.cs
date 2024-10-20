@@ -4,7 +4,6 @@ namespace Scrabble
 
     public class ScrabbleGame
     {
-        private static readonly string powerUpsConfigName = "powerups.config";
         private static readonly int boardDimensions = 15;
 
         //  Both of these are x,y with 0,0 at the top left
@@ -25,9 +24,9 @@ namespace Scrabble
             }
         }
 
-        public void LoadScrabblePowerUps()
+        public void LoadScrabblePowerUps(string powerUpsPath)
         {
-            using (var streamReader = new StreamReader(File.OpenRead(powerUpsConfigName)))
+            using (var streamReader = new StreamReader(File.OpenRead(powerUpsPath)))
             {
                 int i = 0;
                 int character;
@@ -56,7 +55,7 @@ namespace Scrabble
                                 break;
                         }
 
-                        Console.WriteLine(i + ": " + character);
+                        // Console.WriteLine(i + ": " + character);
 
                         powerUps[i % boardDimensions, i / boardDimensions] = powerUp;
 
