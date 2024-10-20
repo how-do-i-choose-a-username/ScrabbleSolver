@@ -1,5 +1,8 @@
 namespace Source
 {
+    /// <summary>
+    /// Collection of mushes. Eg all 3 letter mushes
+    /// </summary>
     class MushCollection
     {
         private List<Mush> mushes;
@@ -46,9 +49,9 @@ namespace Source
             }
         }
 
-        private void AddIfValidAmounts(Mush mustToMatch, Mush matchedMush, List<Mush> mushesFound)
+        private void AddIfValidAmounts(Mush mushToMatch, Mush matchedMush, List<Mush> mushesFound)
         {
-            if (mustToMatch.HasCorrectLetters(matchedMush))
+            if (mushToMatch.HasCorrectLetters(matchedMush))
             {
                 mushesFound.Add(matchedMush);
             }

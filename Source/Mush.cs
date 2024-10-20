@@ -7,7 +7,7 @@ namespace Source
     /// </summary>
     class Mush : IComparable
     {
-        private static readonly int maxWordLength = 16;
+        public static readonly int maxWordLength = 15;
         //  Byte count is 4 for characters, plus 26 times 2 for letters
         public static readonly int byteCount = 83;
         public static readonly int letterCount = 26;
@@ -15,7 +15,7 @@ namespace Source
         //  Indicates which letters are in this mush
         //  Uses least significant bit to indicate mush has character 'a'
         //  Then works its way up to 'z'. Some bits unused
-        private Int32 key;
+        public Int32 key { get; internal set; }
         //  Has a length of 26, one for each letter. 
         //  Each int stores the bit positions of that letter in the word, but reversed
         //  Eg. 'aardvark' would become '00100011' (truncated) and so on
@@ -30,10 +30,14 @@ namespace Source
         //  How many of each letter there is
         private byte[] letterAmounts;
 
-        //  Must have bytes passed in, in the following specific order
-        //  4 bytes key, 1 byte length, 52 bytes letters, 26 bytes letterAmounts
+        /// <summary>
+        /// Load an existing mush from its binary data
+        /// </summary>
+        /// <param name="bytes">Bytes containing mush data</param>
         public Mush(byte[] bytes)
         {
+            //  Must have bytes passed in, in the following specific order
+            //  4 bytes key, 1 byte length, 52 bytes letters, 26 bytes letterAmounts
             letters = new Int16[letterCount];
             letterAmounts = new byte[letterCount];
 
@@ -55,6 +59,10 @@ namespace Source
             }
         }
 
+        /// <summary>
+        /// Generate a new mush from a given string
+        /// </summary>
+        /// <param name="word">The string to mush</param>
         public Mush(string word)
         {
             if (word.Length > maxWordLength)
@@ -72,6 +80,11 @@ namespace Source
             length = (byte)word.Length;
         }
 
+        /// <summary>
+        /// Generate a key to describe the letters in this mush
+        /// </summary>
+        /// <param name="word">String to use</param>
+        /// <returns>The calculated key</returns>
         private Int32 GetCharactersInt(string word)
         {
             Int32 result = 0;
@@ -87,6 +100,11 @@ namespace Source
             return result;
         }
 
+        /// <summary>
+        /// Produce an array of ints. Each int stores the locations of a letter in the mush
+        /// </summary>
+        /// <param name="word">Source word</param>
+        /// <returns>Array of ints storing letter locations</returns>
         private Int16[] GetLettersArray(string word)
         {
             Int16[] letters = new Int16[letterCount];
@@ -108,6 +126,11 @@ namespace Source
             return letters;
         }
 
+        /// <summary>
+        /// Generate an array of values to store how often each letter appears in the mush
+        /// </summary>
+        /// <param name="word">Source word</param>
+        /// <returns>Array of letter counts</returns>
         private byte[] GetLetterAmountsArray(string word)
         {
             byte[] result = new byte[letterCount];
@@ -125,11 +148,10 @@ namespace Source
             return result;
         }
 
-        public Int32 GetCharactersCode()
-        {
-            return key;
-        }
-
+        /// <summary>
+        /// Convert this mush back to a string for easier reading
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             char[] result = new char[maxWordLength];
@@ -151,6 +173,10 @@ namespace Source
             return new string(result).Trim();
         }
 
+        /// <summary>
+        /// Pcak the mush into a byte array for writing to disk
+        /// </summary>
+        /// <returns>Byte array of the mush</returns>
         public byte[] ToBytes()
         {
             if (badMush)
@@ -185,6 +211,12 @@ namespace Source
             return result;
         }
 
+        /// <summary>
+        /// Use the key to find matching mushes. This ignores letter ordering to catch all words. 
+        /// Also ignores letter count which is caught later
+        /// </summary>
+        /// <param name="obj">Object to compare, should be a mush</param>
+        /// <returns>Integer result from comparing the keys</returns>
         public int CompareTo(object? obj)
         {
             int result = 0;
@@ -205,7 +237,7 @@ namespace Source
 
             if (mushToCheck.length == length)
             {
-                for (int i = 0; i < letterCount; i++)
+                for (int i = 0; i < letterCount && enough; i++)
                 {
                     if (mushToCheck.letterAmounts[i] != letterAmounts[i])
                     {

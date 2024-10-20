@@ -2,30 +2,28 @@ namespace Source
 {
     class MushMatcher
     {
-        Dictionary<int, MushCollection> mushLists;
+        // Dictionary<int, MushCollection> mushLists;
+        List<MushCollection> mushLists;
         Config config;
 
         public MushMatcher(Config config)
         {
             this.config = config;
 
-            mushLists = new Dictionary<int, MushCollection>();
+            mushLists = new List<MushCollection>();
         }
 
         public void FindMatches(Mush mushToMatch, List<Mush> mushes)
         {
             int length = mushToMatch.length;
 
-            if (!mushLists.ContainsKey(length))
-            {
-                LoadMushCollection(length);
-            }
-
-            mushLists[length].FindMushMatches(mushToMatch, mushes);
+            mushLists[length - 1].FindMushMatches(mushToMatch, mushes);
         }
 
         public List<string> FindMatchStrings(string word, bool findSubMatches)
         {
+            CheckLoadedMushCollections(word.Length);
+
             List<Mush> mushes = new List<Mush>();
 
             if (findSubMatches)
@@ -50,13 +48,25 @@ namespace Source
             return mushNames;
         }
 
+        /// <summary>
+        /// Check we have the correct mush lists loaded, if not then lazy load the list
+        /// </summary>
+        /// <param name="length">Maximum mush length that needs to be loaded</param>
+        private void CheckLoadedMushCollections(int length) {
+            if (length <= Mush.maxWordLength && mushLists.Count < length) {
+                for (int i = mushLists.Count; i < length; i++) {
+                    LoadMushCollection(i + 1);
+                }
+            }
+        }
+
         private void LoadMushCollection(int mushGroup)
         {
             //  Create a new mush collection, and load it in
             MushCollection collection = new MushCollection();
             collection.LoadMushes(config.path + config.mushGroupPrefix + mushGroup);
 
-            mushLists.Add(mushGroup, collection);
+            mushLists.Add(collection);
         }
 
         //  Probably smarter ways exist of getting the max mask and building the strings, but im happy
