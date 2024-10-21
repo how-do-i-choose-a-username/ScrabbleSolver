@@ -118,29 +118,12 @@ namespace Scrabble
 
             Dictionary<int, ICollection<string>> letterCombos = MushMatcher.WordCombinationsByCount(letters);
 
-            // foreach (var item in letterCombos)
-            // {
-            //     Console.Write(item.Key);
-            //     foreach (var value in item.Value)
-            //     {
-            //         Console.Write(" " + value);
-            //     }
-            //     Console.WriteLine();
-            // }
-
             for (int i = letters.Length; i > 0; i--)
             {
-                // if (i != letters.Length)
-                // {
-                //     break;
-                // }
-
                 List<WordPosition> positions = GenerateWordPositions(i);
 
                 foreach (WordPosition wordPosition in positions)
                 {
-                    // OutputBoardToConsole(wordPosition);
-
                     List<string> matches = new List<string>();
 
                     // Get the letters from that board position and process them
@@ -158,7 +141,6 @@ namespace Scrabble
                     // Characters were found on the board and will need to be used as a filter
                     else
                     {
-                        // Console.WriteLine("Using the following characters from the board: " + lettersAtPosition.Replace(" ", "."));
                         Int16[] lettersMask = Mush.GetLettersArray(lettersAtPosition);
 
                         foreach (string letterCombo in letterCombos[i])
@@ -169,14 +151,17 @@ namespace Scrabble
 
                     if (matches.Count > 0)
                     {
-                        OutputBoardToConsole(wordPosition);
-
                         matches.Sort(new SortSizeLetters());
 
-                        Console.WriteLine("Found the following matches:");
                         foreach (string match in matches)
                         {
-                            Console.WriteLine(match);
+                            string lettersUsed = match;
+                            foreach (char character in rawBoardLetters)
+                            {
+                                lettersUsed = lettersUsed.Remove(lettersUsed.IndexOf(character), 1);
+                            }
+                            Console.WriteLine("\nFound the word '" + match + "' using the letters '" + lettersUsed + "'");
+                            OutputBoardToConsole(wordPosition, match);
                         }
                     }
                 }
@@ -354,12 +339,12 @@ namespace Scrabble
             return new string(characters);
         }
 
-        public void OutputBoardToConsole(WordPosition? wordPosition = null)
+        public void OutputBoardToConsole(WordPosition? wordPosition = null, string? word = null)
         {
             ConsoleColor defaultBackColour = Console.BackgroundColor;
             ConsoleColor defaultForeColour = Console.ForegroundColor;
 
-            Console.WriteLine();
+            int charIndex = 0;
 
             for (int i = -1; i < boardDimensions; i++)
             {
@@ -403,19 +388,37 @@ namespace Scrabble
 
                         char toWrite = lettersOnBoard[j, i];
 
-                        if (toWrite == defaultBoardChar && wordPosition != null)
+                        if ((toWrite == defaultBoardChar || word != null) && wordPosition != null)
                         {
+                            bool writeWordChar = false;
                             WordPosition position = (WordPosition)wordPosition;
                             if (position.wordDirection == WordDirection.RIGHT && position.start.y == i)
                             {
                                 if (position.start.x <= j && position.start.x + position.length >= j)
                                 {
-                                    toWrite = '.';
+                                    writeWordChar = true;
                                 }
                             }
                             else if (position.wordDirection == WordDirection.DOWN && position.start.x == j)
                             {
                                 if (position.start.y <= i && position.start.y + position.length >= i)
+                                {
+                                    writeWordChar = true;
+                                }
+                            }
+
+                            if (writeWordChar)
+                            {
+                                if (word != null)
+                                {
+                                    if (toWrite == defaultBoardChar)
+                                    {
+                                        Console.ForegroundColor = ConsoleColor.Magenta;
+                                    }
+                                    toWrite = word[charIndex];
+                                    charIndex ++;
+                                }
+                                else
                                 {
                                     toWrite = '.';
                                 }
