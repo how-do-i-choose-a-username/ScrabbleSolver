@@ -116,6 +116,18 @@ namespace Scrabble
         {
             MushMatcher matcher = new MushMatcher(config);
 
+            Dictionary<int, ICollection<string>> letterCombos = MushMatcher.WordCombinationsByCount(letters);
+
+            // foreach (var item in letterCombos)
+            // {
+            //     Console.Write(item.Key);
+            //     foreach (var value in item.Value)
+            //     {
+            //         Console.Write(" " + value);
+            //     }
+            //     Console.WriteLine();
+            // }
+
             for (int i = letters.Length; i > 0; i--)
             {
                 // if (i != letters.Length)
@@ -133,19 +145,26 @@ namespace Scrabble
 
                     // Get the letters from that board position and process them
                     string lettersAtPosition = ExtractWordPositionFromBoard(wordPosition);
-                    string rawBoardLetters = lettersAtPosition.Replace(defaultBoardChar.ToString(),"");
+                    string rawBoardLetters = lettersAtPosition.Replace(defaultBoardChar.ToString(), "");
 
                     // No characters collected from the board, just find a word normally
                     if (string.IsNullOrEmpty(rawBoardLetters))
                     {
-                        matches = matcher.FindMatchStrings(letters, false);
+                        foreach (string letterCombo in letterCombos[i])
+                        {
+                            matches.AddRange(matcher.FindMatchStrings(letterCombo, false));
+                        }
                     }
                     // Characters were found on the board and will need to be used as a filter
                     else
                     {
-                        Console.WriteLine("Using the following characters form the board: " + lettersAtPosition.Replace(" ", "."));
+                        // Console.WriteLine("Using the following characters from the board: " + lettersAtPosition.Replace(" ", "."));
                         Int16[] lettersMask = Mush.GetLettersArray(lettersAtPosition);
-                        matches = matcher.FindMatchStrings(letters + rawBoardLetters, false, lettersMask);
+
+                        foreach (string letterCombo in letterCombos[i])
+                        {
+                            matches.AddRange(matcher.FindMatchStrings(rawBoardLetters + letterCombo, false, lettersMask));
+                        }
                     }
 
                     if (matches.Count > 0)
@@ -164,7 +183,6 @@ namespace Scrabble
             }
         }
 
-        // TODO Word positions need to include the letters before and after them
         private List<WordPosition> GenerateWordPositions(int letterCount)
         {
             List<WordPosition> positions = new List<WordPosition>();
@@ -264,6 +282,23 @@ namespace Scrabble
                                     }
                                 }
                                 initialPosition.length = j;
+
+                                // Move and extend the word position to include all the letters before the word too
+                                int k = 0;
+                                Coord newStart = initialPosition.start;
+                                running = true;
+                                while (running)
+                                {
+                                    Coord coord = initialPosition.GetCoordAtIndex(-k - 1);
+                                    running = TileOnBoard(coord) && !TileIsBlank(coord);
+                                    if (running)
+                                    {
+                                        k++;
+                                        newStart = coord;
+                                    }
+                                }
+                                initialPosition.length = initialPosition.length + k;
+                                initialPosition.start = newStart;
 
                                 positions.Add(initialPosition);
                             }

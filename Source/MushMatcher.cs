@@ -69,8 +69,28 @@ namespace Source
             mushLists.Add(collection);
         }
 
+        public static Dictionary<int, ICollection<string>> WordCombinationsByCount(string letters)
+        {
+            ICollection<string> combos = GetWordCombinations(letters);
+
+            Dictionary<int, ICollection<string>> result = new Dictionary<int, ICollection<string>>();
+
+            foreach (string str in combos)
+            {
+                int strLength = str.Length;
+                if (!result.ContainsKey(strLength))
+                {
+                    result.Add(strLength, new List<string>());
+                }
+
+                result[strLength].Add(str);
+            }
+
+            return result;
+        }
+
         //  Probably smarter ways exist of getting the max mask and building the strings, but im happy
-        private ICollection<string> GetWordCombinations(string word)
+        private static ICollection<string> GetWordCombinations(string word)
         {
             //  Set to prevent the same sub string being considered twice
             HashSet<string> combinations = new HashSet<string>();
