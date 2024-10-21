@@ -3,7 +3,7 @@ using Source;
 
 namespace Scrabble
 {
-    enum PowerUp { None, DoubleLetter, TrippleLetter, DoubleWord, TripleWord }
+    enum PowerUp { None, DoubleLetter, TripleLetter, DoubleWord, TripleWord }
 
     public class ScrabbleGame
     {
@@ -52,7 +52,7 @@ namespace Scrabble
                                 powerUp = PowerUp.DoubleLetter;
                                 break;
                             case 't':
-                                powerUp = PowerUp.TrippleLetter;
+                                powerUp = PowerUp.TripleLetter;
                                 break;
                             case 'D':
                                 powerUp = PowerUp.DoubleWord;
@@ -127,8 +127,6 @@ namespace Scrabble
 
             for (int i = 0; i < boardDimensions; i++)
             {
-                // Console.WriteLine("Running iteration " + i);
-
                 int letterIndex = 0;
                 Coord[] placedLetters = new Coord[letterCount];
 
@@ -139,7 +137,6 @@ namespace Scrabble
                     if (TileIsBlank(j, i))
                     {
                         placedLetters[letterIndex] = new Coord(j, i);
-                        // Console.WriteLine("Placing a letter pos at " + placedLetters[letterIndex]);
                         letterIndex++;
                     }
                 }
@@ -149,22 +146,23 @@ namespace Scrabble
                 if (letterIndex == letterCount)
                 {
                     // Move the letter index back to the end of the array
+                    // Letter index points to the last element of the word sequence
                     letterIndex--;
 
-                    // Console.WriteLine("Got to phase two on index " + i);
                     bool runLoop = true;
                     // Add word positions from the placed letters
                     do
                     {
-                        int lastPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
-                        // int lastPosition = (letterIndex == 0) ? letterCount - 1 : letterIndex - 1;
-                        Console.Write("Array size " + placedLetters.Length + " letterindex " + letterIndex + " last position " + lastPosition + "   ");
-                        int length = placedLetters[letterIndex].x - placedLetters[lastPosition].x;
-                        positions.Add(new WordPosition(placedLetters[letterIndex], length, letterCount, WordDirection.RIGHT));
+                        // Get the next array index (looping around to the start)
+                        int firstPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
+                        // int firstPosition = (letterIndex == 0) ? letterCount - 1 : letterIndex - 1;
+                        Console.Write("Array size " + placedLetters.Length + " letterindex " + letterIndex + " last position " + firstPosition + "   ");
+                        int length = placedLetters[letterIndex].x - placedLetters[firstPosition].x + 1;
+                        positions.Add(new WordPosition(placedLetters[firstPosition], length, letterCount, WordDirection.RIGHT));
                         Console.WriteLine(positions.Last().ToString());
 
                         // Move a copy of the last letter until we find a suitable place for it
-                        Coord lastLetterPos = placedLetters[lastPosition];
+                        Coord lastLetterPos = placedLetters[letterIndex];
                         for (int j = lastLetterPos.x + 1; ; j++)
                         {
                             // Stopping condition for this loop. When it reaches the end also stop the do while loop
@@ -173,11 +171,10 @@ namespace Scrabble
                                 runLoop = false;
                                 break;
                             }
-
-                            if (TileIsBlank(j, i))
+                            else if (TileIsBlank(j, i))
                             {
-                                placedLetters[lastPosition] = new Coord(j, i);
-                                letterIndex = (letterIndex + 1) % letterCount;
+                                placedLetters[firstPosition] = new Coord(j, i);
+                                letterIndex = firstPosition;
                                 // Once we have placed a letter break this loop and add a new word position
                                 break;
                             }
@@ -230,7 +227,7 @@ namespace Scrabble
                             case PowerUp.DoubleLetter:
                                 Console.BackgroundColor = ConsoleColor.Blue;
                                 break;
-                            case PowerUp.TrippleLetter:
+                            case PowerUp.TripleLetter:
                                 Console.BackgroundColor = ConsoleColor.DarkBlue;
                                 break;
                             case PowerUp.DoubleWord:
