@@ -38,8 +38,6 @@ namespace Source
                 game.LoadScrabbleLetters(args[0]);
 
                 game.SolveGame(args[1]);
-
-                game.OutputBoardToConsole();
             }
             else
             {

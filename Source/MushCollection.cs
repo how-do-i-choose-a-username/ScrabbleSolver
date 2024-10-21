@@ -25,33 +25,33 @@ namespace Source
             }
         }
 
-        public void FindMushMatches(Mush mushToMatch, List<Mush> mushesFound)
+        public void FindMushMatches(Mush mushToMatch, List<Mush> mushesFound, Int16[]? lettersMask)
         {
             int itemIndex = mushes.BinarySearch(mushToMatch);
 
             //  This mush is in the list of known mushes
             if (itemIndex >= 0)
             {
-                AddIfValidAmounts(mushToMatch, mushes[itemIndex], mushesFound);
+                AddIfValidAmounts(mushToMatch, mushes[itemIndex], mushesFound, lettersMask);
 
                 //  Loop backwards and forwards to catch any other matching mushes
                 //  Loop backwards 
                 for (int i = itemIndex - 1; i >= 0 && mushes[i].CompareTo(mushToMatch) == 0; i--)
                 {
-                    AddIfValidAmounts(mushToMatch, mushes[i], mushesFound);
+                    AddIfValidAmounts(mushToMatch, mushes[i], mushesFound, lettersMask);
                 }
 
                 //  Loop forwards
                 for (int i = itemIndex + 1; i < mushes.Count && mushes[i].CompareTo(mushToMatch) == 0; i++)
                 {
-                    AddIfValidAmounts(mushToMatch, mushes[i], mushesFound);
+                    AddIfValidAmounts(mushToMatch, mushes[i], mushesFound, lettersMask);
                 }
             }
         }
 
-        private void AddIfValidAmounts(Mush mushToMatch, Mush matchedMush, List<Mush> mushesFound)
+        private void AddIfValidAmounts(Mush mushToMatch, Mush matchedMush, List<Mush> mushesFound, Int16[]? lettersMask)
         {
-            if (mushToMatch.HasCorrectLetters(matchedMush))
+            if (mushToMatch.HasCorrectLetters(matchedMush) && (lettersMask == null || mushToMatch.HasCorrectMasks(lettersMask)))
             {
                 mushesFound.Add(matchedMush);
             }

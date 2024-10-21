@@ -13,6 +13,7 @@ namespace Scrabble
     public class ScrabbleGame
     {
         private static readonly int boardDimensions = 15;
+        private static readonly char defaultBoardChar = ' ';
 
         //  Both of these are x,y with 0,0 at the top left
         private PowerUp[,] powerUps;
@@ -20,8 +21,11 @@ namespace Scrabble
 
         private Config config;
 
+        private char CharAtTile(Coord coord) => CharAtTile(coord.x, coord.y);
+        private char CharAtTile(int x, int y) => lettersOnBoard[x, y];
+
         private bool TileIsBlank(Coord coord) => TileIsBlank(coord.x, coord.y);
-        private bool TileIsBlank(int x, int y) => lettersOnBoard[x, y] == ' ';
+        private bool TileIsBlank(int x, int y) => CharAtTile(x, y) == defaultBoardChar;
 
         private bool TileOnBoard(Coord coord) => TileOnBoard(coord.x, coord.y);
         private bool TileOnBoard(int x, int y) => x >= 0 && y >= 0 && x < boardDimensions && y < boardDimensions;
@@ -37,7 +41,7 @@ namespace Scrabble
             {
                 for (int j = 0; j < boardDimensions; j++)
                 {
-                    lettersOnBoard[i, j] = ' ';
+                    lettersOnBoard[i, j] = defaultBoardChar;
                 }
             }
         }
@@ -110,35 +114,52 @@ namespace Scrabble
         /// <param name="letters">Input letters to use</param>
         public void SolveGame(string letters)
         {
-            // MushMatcher matcher = new MushMatcher(config);
-
-            // List<string> matches = matcher.FindMatchStrings(letters, true);
-
-            // matches.Sort(new SortSizeLetters());
-
-            // Console.WriteLine("Found the following matches:");
-            // foreach (string match in matches)
-            // {
-            //     Console.WriteLine(match);
-            // }
+            MushMatcher matcher = new MushMatcher(config);
 
             for (int i = letters.Length; i > 0; i--)
             {
                 List<WordPosition> positions = GenerateWordPositions(i);
-                Console.WriteLine("Word size: " + i + " Positions found: " + positions.Count);
 
-                if (i == 1)
+                foreach (WordPosition wordPosition in positions)
                 {
-                    foreach (WordPosition wordPosition in positions)
+                    // OutputBoardToConsole(wordPosition);
+
+                    List<string> matches = new List<string>();
+
+                    // Get the letters from that board position and process them
+                    string lettersAtPosition = ExtractWordPositionFromBoard(wordPosition);
+                    string rawBoardLetters = lettersAtPosition.Replace(defaultBoardChar.ToString(),"");
+
+                    // No characters collected from the board, just find a word normally
+                    if (string.IsNullOrEmpty(rawBoardLetters))
+                    {
+                        matches = matcher.FindMatchStrings(letters, false);
+                    }
+                    // Characters were found on the board and will need to be used as a filter
+                    else
+                    {
+                        Console.WriteLine("Using the following characters form the board: " + lettersAtPosition.Replace(" ", "."));
+                        Int16[] lettersMask = Mush.GetLettersArray(lettersAtPosition);
+                        matches = matcher.FindMatchStrings(letters + rawBoardLetters, false, lettersMask);
+                    }
+
+                    if (matches.Count > 0)
                     {
                         OutputBoardToConsole(wordPosition);
+
+                        matches.Sort(new SortSizeLetters());
+
+                        Console.WriteLine("Found the following matches:");
+                        foreach (string match in matches)
+                        {
+                            Console.WriteLine(match);
+                        }
                     }
                 }
             }
         }
 
-        // TODO I have a minor bug in the code. When finding 1 letter words I get more positions than I should
-        // Im not sure what other issues this is covering up, as I expect I should be able to scan in 1 direction to get all 1 letter words
+        // TODO Word positions need to include the letters before and after them
         private List<WordPosition> GenerateWordPositions(int letterCount)
         {
             List<WordPosition> positions = new List<WordPosition>();
@@ -265,6 +286,18 @@ namespace Scrabble
             return positions;
         }
 
+        private string ExtractWordPositionFromBoard(WordPosition wordPosition)
+        {
+            char[] characters = new char[wordPosition.length + 1];
+
+            for (int i = 0; i <= wordPosition.length; i++)
+            {
+                characters[i] = CharAtTile(wordPosition.GetCoordAtIndex(i));
+            }
+
+            return new string(characters);
+        }
+
         public void OutputBoardToConsole(WordPosition? wordPosition = null)
         {
             ConsoleColor defaultBackColour = Console.BackgroundColor;
@@ -314,7 +347,7 @@ namespace Scrabble
 
                         char toWrite = lettersOnBoard[j, i];
 
-                        if (toWrite == ' ' && wordPosition != null)
+                        if (toWrite == defaultBoardChar && wordPosition != null)
                         {
                             WordPosition position = (WordPosition)wordPosition;
                             if (position.wordDirection == WordDirection.RIGHT && position.start.y == i)

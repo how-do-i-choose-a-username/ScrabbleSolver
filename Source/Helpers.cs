@@ -89,6 +89,11 @@ namespace Source
             this.wordDirection = wordDirection;
         }
 
+        public Coord GetCoordAtIndex(int i)
+        {
+            return new Coord(start, (int)wordDirection, i);
+        }
+
         public override string ToString()
         {
             return start.ToString() + " - " + length + " " + wordDirection.ToString();

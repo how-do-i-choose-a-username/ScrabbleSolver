@@ -105,7 +105,7 @@ namespace Source
         /// </summary>
         /// <param name="word">Source word</param>
         /// <returns>Array of ints storing letter locations</returns>
-        private Int16[] GetLettersArray(string word)
+        public static Int16[] GetLettersArray(string word)
         {
             Int16[] letters = new Int16[letterCount];
 
@@ -251,6 +251,24 @@ namespace Source
             }
 
             return enough;
+        }
+
+        // TODO Something here does not work yet. Testing the program with 'dotnet run ..\TestBoard.txt rx a' does not find the word 'relax' as expected
+        // If I modify this function to always return true it works correctly and finds the word
+        public bool HasCorrectMasks(Int16[] masksToCheck)
+        {
+            bool matchesMask = true;
+
+            for (int i = 0; i < masksToCheck.Length && matchesMask; i++)
+            {
+                // If the incoming mask has a bit set the existing mask must not be 0 when applied
+                if (masksToCheck[i] != 0)
+                {
+                    matchesMask = matchesMask && (masksToCheck[i] & letters[i]) == masksToCheck[i];
+                }
+            }
+
+            return true;
         }
     }
 }

@@ -13,14 +13,14 @@ namespace Source
             mushLists = new List<MushCollection>();
         }
 
-        private void FindMatches(Mush mushToMatch, List<Mush> mushes)
+        private void FindMatches(Mush mushToMatch, List<Mush> mushes, Int16[]? lettersMask)
         {
             int length = mushToMatch.length;
 
-            mushLists[length - 1].FindMushMatches(mushToMatch, mushes);
+            mushLists[length - 1].FindMushMatches(mushToMatch, mushes, lettersMask);
         }
 
-        public List<string> FindMatchStrings(string word, bool findSubMatches)
+        public List<string> FindMatchStrings(string word, bool findSubMatches, Int16[]? lettersMask = null)
         {
             CheckLoadedMushCollections(word.Length);
 
@@ -30,12 +30,12 @@ namespace Source
             {
                 foreach (string subWord in GetWordCombinations(word))
                 {
-                    FindMatches(new Mush(subWord), mushes);
+                    FindMatches(new Mush(subWord), mushes, lettersMask);
                 }
             }
             else
             {
-                FindMatches(new Mush(word), mushes);
+                FindMatches(new Mush(word), mushes, lettersMask);
             }
 
             List<string> mushNames = new List<string>(mushes.Count);
