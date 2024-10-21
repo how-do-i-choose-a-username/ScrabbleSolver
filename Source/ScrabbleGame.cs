@@ -3,7 +3,7 @@ using Source;
 
 namespace Scrabble
 {
-    enum PowerUp { None, DoubleLetter, TrippleLetter, DoubleWord, TrippleWord }
+    enum PowerUp { None, DoubleLetter, TrippleLetter, DoubleWord, TripleWord }
 
     public class ScrabbleGame
     {
@@ -58,7 +58,7 @@ namespace Scrabble
                                 powerUp = PowerUp.DoubleWord;
                                 break;
                             case 'T':
-                                powerUp = PowerUp.TrippleWord;
+                                powerUp = PowerUp.TripleWord;
                                 break;
                             default:
                                 break;
@@ -86,7 +86,7 @@ namespace Scrabble
                     {
                         if (line[i] >= 'a' && line[i] <= 'z')
                         {
-                            lettersOnBoard[lineNumber, i] = line[i];
+                            lettersOnBoard[i, lineNumber] = line[i];
                         }
                     }
 
@@ -117,7 +117,7 @@ namespace Scrabble
             Console.WriteLine("Positions found: " + positions.Count);
             foreach (WordPosition pos in positions)
             {
-                Console.WriteLine(pos.ToString());
+                // Console.WriteLine(pos.ToString());
             }
         }
 
@@ -157,9 +157,11 @@ namespace Scrabble
                     do
                     {
                         int lastPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
-                        // Console.WriteLine("Array size " + placedLetters.Length + " letterindex " + letterIndex + " last position " + lastPosition);
+                        // int lastPosition = (letterIndex == 0) ? letterCount - 1 : letterIndex - 1;
+                        Console.Write("Array size " + placedLetters.Length + " letterindex " + letterIndex + " last position " + lastPosition + "   ");
                         int length = placedLetters[letterIndex].x - placedLetters[lastPosition].x;
                         positions.Add(new WordPosition(placedLetters[letterIndex], length, letterCount, WordDirection.RIGHT));
+                        Console.WriteLine(positions.Last().ToString());
 
                         // Move a copy of the last letter until we find a suitable place for it
                         Coord lastLetterPos = placedLetters[lastPosition];
@@ -219,7 +221,7 @@ namespace Scrabble
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.White;
-                        switch (powerUps[i, j])
+                        switch (powerUps[j, i])
                         {
                             case PowerUp.None:
                                 Console.BackgroundColor = ConsoleColor.White;
@@ -234,12 +236,12 @@ namespace Scrabble
                             case PowerUp.DoubleWord:
                                 Console.BackgroundColor = ConsoleColor.Red;
                                 break;
-                            case PowerUp.TrippleWord:
+                            case PowerUp.TripleWord:
                                 Console.BackgroundColor = ConsoleColor.DarkRed;
                                 break;
                         }
 
-                        Console.Write(lettersOnBoard[i, j]);
+                        Console.Write(lettersOnBoard[j, i]);
                         Console.Write(' ');
                     }
                 }
