@@ -110,31 +110,40 @@ namespace Scrabble
         /// <param name="letters">Input letters to use</param>
         public void SolveGame(string letters)
         {
-            MushMatcher matcher = new MushMatcher(config);
+            // MushMatcher matcher = new MushMatcher(config);
 
-            List<string> matches = matcher.FindMatchStrings(letters, true);
+            // List<string> matches = matcher.FindMatchStrings(letters, true);
 
-            matches.Sort(new SortSizeLetters());
+            // matches.Sort(new SortSizeLetters());
 
-            Console.WriteLine("Found the following matches:");
-            foreach (string match in matches)
+            // Console.WriteLine("Found the following matches:");
+            // foreach (string match in matches)
+            // {
+            //     Console.WriteLine(match);
+            // }
+
+            for (int i = letters.Length; i > 0; i--)
             {
-                Console.WriteLine(match);
-            }
+                List<WordPosition> positions = GenerateWordPositions(i);
+                Console.WriteLine("Word size: " + i + " Positions found: " + positions.Count);
 
-            List<WordPosition> positions = GenerateWordPositions(letters.Length);
-            foreach (WordPosition pos in positions)
-            {
-                Console.WriteLine(pos.ToString());
+                if (i == 1)
+                {
+                    foreach (WordPosition wordPosition in positions)
+                    {
+                        OutputBoardToConsole(wordPosition);
+                    }
+                }
             }
-            Console.WriteLine("Positions found: " + positions.Count);
         }
 
+        // TODO I have a minor bug in the code. When finding 1 letter words I get more positions than I should
+        // Im not sure what other issues this is covering up, as I expect I should be able to scan in 1 direction to get all 1 letter words
         private List<WordPosition> GenerateWordPositions(int letterCount)
         {
             List<WordPosition> positions = new List<WordPosition>();
 
-            for (int dir = 0; dir < 2; dir++)
+            for (int dir = 0; dir < Math.Min(2, letterCount); dir++)
             {
                 for (int i = 0; i < boardDimensions; i++)
                 {
@@ -177,7 +186,7 @@ namespace Scrabble
                         {
                             // Get the next array index (looping around to the start)
                             int firstPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
-                            int length = placedLetters[letterIndex][dir] - placedLetters[firstPosition][dir] + 1;
+                            int length = placedLetters[letterIndex][dir] - placedLetters[firstPosition][dir];
 
                             // Check that the proposed word is a valid move to play i.e. touches other letters
                             bool wordIntersectsLetters = length > letterCount;
@@ -186,15 +195,28 @@ namespace Scrabble
                             bool letterNextToWord = false;
 
                             // Check the letters next to this word until we find one with contents
-                            for (int j = firstPosition; j != letterIndex && !letterNextToWord; j = (j + 1) % letterCount)
+                            if (letterCount == 1)
                             {
-                                Coord side1Coord = new Coord(placedLetters[j], dir - 1, -1);
-                                Coord side2Coord = new Coord(placedLetters[j], dir - 1, 1);
+                                Coord side1Coord = new Coord(placedLetters[firstPosition], dir - 1, -1);
+                                Coord side2Coord = new Coord(placedLetters[firstPosition], dir - 1, 1);
 
                                 bool side1 = TileOnBoard(side1Coord) && !TileIsBlank(side1Coord);
                                 bool side2 = TileOnBoard(side2Coord) && !TileIsBlank(side2Coord);
 
-                                letterNextToWord = letterNextToWord || side1 || side2;
+                                letterNextToWord = side1 || side2;
+                            }
+                            else
+                            {
+                                for (int j = firstPosition; j != letterIndex && !letterNextToWord; j = (j + 1) % letterCount)
+                                {
+                                    Coord side1Coord = new Coord(placedLetters[j], dir - 1, -1);
+                                    Coord side2Coord = new Coord(placedLetters[j], dir - 1, 1);
+
+                                    bool side1 = TileOnBoard(side1Coord) && !TileIsBlank(side1Coord);
+                                    bool side2 = TileOnBoard(side2Coord) && !TileIsBlank(side2Coord);
+
+                                    letterNextToWord = letterNextToWord || side1 || side2;
+                                }
                             }
 
                             bool wordTouchesLetter = wordIntersectsLetters || letterAfterWord || letterBeforeWord || letterNextToWord;
@@ -243,7 +265,7 @@ namespace Scrabble
             return positions;
         }
 
-        public void OutputBoardToConsole()
+        public void OutputBoardToConsole(WordPosition? wordPosition = null)
         {
             ConsoleColor defaultBackColour = Console.BackgroundColor;
             ConsoleColor defaultForeColour = Console.ForegroundColor;
@@ -290,7 +312,28 @@ namespace Scrabble
                                 break;
                         }
 
-                        Console.Write(lettersOnBoard[j, i]);
+                        char toWrite = lettersOnBoard[j, i];
+
+                        if (toWrite == ' ' && wordPosition != null)
+                        {
+                            WordPosition position = (WordPosition)wordPosition;
+                            if (position.wordDirection == WordDirection.RIGHT && position.start.y == i)
+                            {
+                                if (position.start.x <= j && position.start.x + position.length >= j)
+                                {
+                                    toWrite = '.';
+                                }
+                            }
+                            else if (position.wordDirection == WordDirection.DOWN && position.start.x == j)
+                            {
+                                if (position.start.y <= i && position.start.y + position.length >= i)
+                                {
+                                    toWrite = '.';
+                                }
+                            }
+                        }
+
+                        Console.Write(toWrite);
                         Console.Write(' ');
                     }
                 }
