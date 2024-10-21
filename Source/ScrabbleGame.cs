@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using Source;
 
 namespace Scrabble
@@ -13,6 +14,8 @@ namespace Scrabble
         private char[,] lettersOnBoard;
 
         private Config config;
+
+        private bool TileIsBlank(int x, int y) => lettersOnBoard[x, y] == ' ';
 
         public ScrabbleGame(Config config)
         {
@@ -95,11 +98,11 @@ namespace Scrabble
         /// <summary>
         /// Calculate the best possible placement of the provided letters
         /// </summary>
-        /// <param name="letters"></param>
-        public void SolveGame(string letters) 
+        /// <param name="letters">Input letters to use</param>
+        public void SolveGame(string letters)
         {
             MushMatcher matcher = new MushMatcher(config);
-                
+
             List<string> matches = matcher.FindMatchStrings(letters, true);
 
             matches.Sort(new SortSizeLetters());
@@ -109,45 +112,140 @@ namespace Scrabble
             {
                 Console.WriteLine(match);
             }
+
+            List<WordPosition> positions = GenerateWordPositions(letters.Length);
+            Console.WriteLine("Positions found: " + positions.Count);
+            foreach (WordPosition pos in positions)
+            {
+                Console.WriteLine(pos.ToString());
+            }
         }
 
-        public void OutputBoardToConsole()
+        private List<WordPosition> GenerateWordPositions(int letterCount)
         {
-            ConsoleColor defaultColour = Console.BackgroundColor;
-
-            Console.WriteLine();
+            List<WordPosition> positions = new List<WordPosition>();
 
             for (int i = 0; i < boardDimensions; i++)
             {
-                for (int j = 0; j < boardDimensions; j++)
+                // Console.WriteLine("Running iteration " + i);
+
+                int letterIndex = 0;
+                Coord[] placedLetters = new Coord[letterCount];
+
+                // Phase 1, place all letter positions on free tiles
+                for (int j = 0; j < boardDimensions && letterIndex < letterCount; j++)
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
-
-                    switch (powerUps[i, j])
+                    // If there is no letter on this tile its available
+                    if (TileIsBlank(j, i))
                     {
-                        case PowerUp.None:
-                            Console.BackgroundColor = ConsoleColor.White;
-                            Console.ForegroundColor = ConsoleColor.Black;
-                            break;
-                        case PowerUp.DoubleLetter:
-                            Console.BackgroundColor = ConsoleColor.Blue;
-                            break;
-                        case PowerUp.TrippleLetter:
-                            Console.BackgroundColor = ConsoleColor.DarkBlue;
-                            break;
-                        case PowerUp.DoubleWord:
-                            Console.BackgroundColor = ConsoleColor.Red;
-                            break;
-                        case PowerUp.TrippleWord:
-                            Console.BackgroundColor = ConsoleColor.DarkRed;
-                            break;
+                        placedLetters[letterIndex] = new Coord(j, i);
+                        // Console.WriteLine("Placing a letter pos at " + placedLetters[letterIndex]);
+                        letterIndex++;
                     }
-
-                    Console.Write(lettersOnBoard[i, j]);
-                    Console.Write(' ');
                 }
 
-                Console.BackgroundColor = defaultColour;
+                // Phase 2, shuffle the letter positions along to get word positions
+                // Ensure we actually placed all of the letters on this row
+                if (letterIndex == letterCount)
+                {
+                    // Move the letter index back to the end of the array
+                    letterIndex--;
+
+                    // Console.WriteLine("Got to phase two on index " + i);
+                    bool runLoop = true;
+                    // Add word positions from the placed letters
+                    do
+                    {
+                        int lastPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
+                        // Console.WriteLine("Array size " + placedLetters.Length + " letterindex " + letterIndex + " last position " + lastPosition);
+                        int length = placedLetters[letterIndex].x - placedLetters[lastPosition].x;
+                        positions.Add(new WordPosition(placedLetters[letterIndex], length, letterCount, WordDirection.RIGHT));
+
+                        // Move a copy of the last letter until we find a suitable place for it
+                        Coord lastLetterPos = placedLetters[lastPosition];
+                        for (int j = lastLetterPos.x + 1; ; j++)
+                        {
+                            // Stopping condition for this loop. When it reaches the end also stop the do while loop
+                            if (j >= boardDimensions)
+                            {
+                                runLoop = false;
+                                break;
+                            }
+
+                            if (TileIsBlank(j, i))
+                            {
+                                placedLetters[lastPosition] = new Coord(j, i);
+                                letterIndex = (letterIndex + 1) % letterCount;
+                                // Once we have placed a letter break this loop and add a new word position
+                                break;
+                            }
+                        }
+                    } while (runLoop);
+                }
+            }
+
+            return positions;
+        }
+
+        // Generate all possible valid word positions
+        // Find words that could fit in that position
+        // Validate those words against all other letters
+        // Score the remaining words
+
+        public void OutputBoardToConsole()
+        {
+            ConsoleColor defaultBackColour = Console.BackgroundColor;
+            ConsoleColor defaultForeColour = Console.ForegroundColor;
+
+            Console.WriteLine();
+
+            for (int i = -1; i < boardDimensions; i++)
+            {
+                if (i >= 0)
+                {
+                    Console.Write(i.ToString().PadRight(2));
+                }
+                else
+                {
+                    Console.Write("  ");
+                }
+
+                for (int j = 0; j < boardDimensions; j++)
+                {
+                    if (i == -1)
+                    {
+                        Console.Write(j.ToString().PadRight(2));
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.White;
+                        switch (powerUps[i, j])
+                        {
+                            case PowerUp.None:
+                                Console.BackgroundColor = ConsoleColor.White;
+                                Console.ForegroundColor = ConsoleColor.Black;
+                                break;
+                            case PowerUp.DoubleLetter:
+                                Console.BackgroundColor = ConsoleColor.Blue;
+                                break;
+                            case PowerUp.TrippleLetter:
+                                Console.BackgroundColor = ConsoleColor.DarkBlue;
+                                break;
+                            case PowerUp.DoubleWord:
+                                Console.BackgroundColor = ConsoleColor.Red;
+                                break;
+                            case PowerUp.TrippleWord:
+                                Console.BackgroundColor = ConsoleColor.DarkRed;
+                                break;
+                        }
+
+                        Console.Write(lettersOnBoard[i, j]);
+                        Console.Write(' ');
+                    }
+                }
+
+                Console.BackgroundColor = defaultBackColour;
+                Console.ForegroundColor = defaultForeColour;
                 Console.WriteLine();
             }
 
