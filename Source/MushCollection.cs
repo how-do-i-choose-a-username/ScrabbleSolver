@@ -51,7 +51,7 @@ namespace Source
 
         private void AddIfValidAmounts(Mush mushToMatch, Mush matchedMush, List<Mush> mushesFound, Int16[]? lettersMask)
         {
-            if (mushToMatch.HasCorrectLetters(matchedMush) && (lettersMask == null || mushToMatch.HasCorrectMasks(lettersMask)))
+            if (mushToMatch.HasCorrectLetters(matchedMush) && (lettersMask == null || matchedMush.HasCorrectMasks(lettersMask)))
             {
                 mushesFound.Add(matchedMush);
             }
