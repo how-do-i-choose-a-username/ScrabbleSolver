@@ -20,7 +20,11 @@ namespace Scrabble
 
         private Config config;
 
+        private bool TileIsBlank(Coord coord) => TileIsBlank(coord.x, coord.y);
         private bool TileIsBlank(int x, int y) => lettersOnBoard[x, y] == ' ';
+
+        private bool TileOnBoard(Coord coord) => TileOnBoard(coord.x, coord.y);
+        private bool TileOnBoard(int x, int y) => x >= 0 && y >= 0 && x < boardDimensions && y < boardDimensions;
 
         public ScrabbleGame(Config config)
         {
@@ -174,7 +178,31 @@ namespace Scrabble
                             // Get the next array index (looping around to the start)
                             int firstPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
                             int length = placedLetters[letterIndex][dir] - placedLetters[firstPosition][dir] + 1;
-                            positions.Add(new WordPosition(placedLetters[firstPosition], length, letterCount, (WordDirection)dir));
+
+                            // Check that the proposed word is a valid move to play i.e. touches other letters
+                            bool wordIntersectsLetters = length > letterCount;
+                            bool letterAfterWord = placedLetters[letterIndex][dir] + 1 < boardDimensions && !TileIsBlank(new Coord(placedLetters[letterIndex], dir, 1));
+                            bool letterBeforeWord = placedLetters[firstPosition][dir] - 1 > 0 && !TileIsBlank(new Coord(placedLetters[firstPosition], dir, -1));
+                            bool letterNextToWord = false;
+
+                            // Check the letters next to this word until we find one with contents
+                            for (int j = firstPosition; j != letterIndex && !letterNextToWord; j = (j + 1) % letterCount)
+                            {
+                                Coord side1Coord = new Coord(placedLetters[j], dir - 1, -1);
+                                Coord side2Coord = new Coord(placedLetters[j], dir - 1, 1);
+
+                                bool side1 = TileOnBoard(side1Coord) && !TileIsBlank(side1Coord);
+                                bool side2 = TileOnBoard(side2Coord) && !TileIsBlank(side2Coord);
+
+                                letterNextToWord = letterNextToWord || side1 || side2;
+                            }
+
+                            bool wordTouchesLetter = wordIntersectsLetters || letterAfterWord || letterBeforeWord || letterNextToWord;
+
+                            if (wordTouchesLetter)
+                            {
+                                positions.Add(new WordPosition(placedLetters[firstPosition], length, letterCount, (WordDirection)dir));
+                            }
 
                             // Move a copy of the last letter until we find a suitable place for it
                             Coord lastLetterPos = placedLetters[letterIndex];

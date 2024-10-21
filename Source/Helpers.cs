@@ -25,6 +25,7 @@ namespace Source
 
     public struct Coord
     {
+        // Element 0 is x, any other value is y
         public int x { get; internal set; } = -1;
         public int y { get; internal set; } = -1;
 
@@ -32,6 +33,20 @@ namespace Source
         {
             this.x = x;
             this.y = y;
+        }
+
+        public Coord(Coord coord, int dimension, int change)
+        {
+            x = coord.x;
+            y = coord.y;
+            if (dimension == 0)
+            {
+                x += change;
+            }
+            else
+            {
+                y += change;
+            }
         }
 
         public override string ToString()
