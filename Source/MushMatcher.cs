@@ -13,7 +13,7 @@ namespace Source
             mushLists = new List<MushCollection>();
         }
 
-        public void FindMatches(Mush mushToMatch, List<Mush> mushes)
+        private void FindMatches(Mush mushToMatch, List<Mush> mushes)
         {
             int length = mushToMatch.length;
 

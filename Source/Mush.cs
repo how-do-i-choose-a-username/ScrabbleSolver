@@ -113,11 +113,7 @@ namespace Source
             {
                 char currentLetter = word[i];
 
-                if (currentLetter < 'a' || currentLetter > 'z')
-                {
-                    badMush = true;
-                }
-                else
+                if (currentLetter >= 'a' && currentLetter <= 'z')
                 {
                     letters[currentLetter - 'a'] |= (Int16)(1 << i);
                 }
@@ -139,9 +135,13 @@ namespace Source
             {
                 char currentLetter = word[i];
 
-                if (currentLetter > 'a' && currentLetter < 'z')
+                if (currentLetter >= 'a' && currentLetter <= 'z')
                 {
                     result[currentLetter - 'a'] += 1;
+                }
+                else
+                {
+                    badMush = true;
                 }
             }
 
