@@ -48,6 +48,22 @@ namespace Source
             return mushNames;
         }
 
+        public bool HasExactWord(string word)
+        {
+            CheckLoadedMushCollections(word.Length);
+
+            List<Mush> mushes = new List<Mush>();
+            FindMatches(new Mush(word), mushes, null);
+
+            bool foundWord = false;
+            for (int i = 0; i < mushes.Count && !foundWord; i++)
+            {
+                foundWord = mushes[i].ToString() == word;
+            }
+
+            return foundWord;
+        }
+
         /// <summary>
         /// Check we have the correct mush lists loaded, if not then lazy load the list
         /// </summary>

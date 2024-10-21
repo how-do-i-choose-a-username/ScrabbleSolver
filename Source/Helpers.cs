@@ -89,14 +89,50 @@ namespace Source
             this.wordDirection = wordDirection;
         }
 
+        public WordPosition(Coord start, int length, int lettersUsed, int wordDirection)
+        {
+            this.start = start;
+            this.length = length;
+            this.lettersUsed = lettersUsed;
+            if (wordDirection == 0)
+            {
+                this.wordDirection = WordDirection.RIGHT;
+            }
+            else
+            {
+                this.wordDirection = WordDirection.DOWN;
+            }
+        }
+
         public Coord GetCoordAtIndex(int i)
         {
             return new Coord(start, (int)wordDirection, i);
         }
 
+        public WordPosition ThisWithOtherDirection()
+        {
+            return new WordPosition(start, length, lettersUsed, (int)wordDirection - 1);
+        }
+
         public override string ToString()
         {
-            return start.ToString() + " - " + length + " " + wordDirection.ToString();
+            return "Start: " + start.ToString() + " Length: " + length + " Direction: " + wordDirection.ToString("D");
+        }
+    }
+
+    public class ScrabbleSolution
+    {
+        public string word;
+        public WordPosition position;
+        public int score;
+
+        public string boardLetters;
+
+        public ScrabbleSolution(string word, WordPosition position, string boardLetters)
+        {
+            this.word = word;
+            this.position = position;
+            this.boardLetters = boardLetters;
         }
     }
 }

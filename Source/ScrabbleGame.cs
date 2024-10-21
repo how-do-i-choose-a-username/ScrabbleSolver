@@ -118,6 +118,8 @@ namespace Scrabble
 
             Dictionary<int, ICollection<string>> letterCombos = MushMatcher.WordCombinationsByCount(letters);
 
+            List<ScrabbleSolution> solutions = new List<ScrabbleSolution>();
+
             for (int i = letters.Length; i > 0; i--)
             {
                 List<WordPosition> positions = GenerateWordPositions(i);
@@ -149,23 +151,30 @@ namespace Scrabble
                         }
                     }
 
-                    if (matches.Count > 0)
-                    {
-                        matches.Sort(new SortSizeLetters());
+                    matches.Sort(new SortSizeLetters());
 
-                        foreach (string match in matches)
+                    foreach (string match in matches)
+                    {
+                        if ((wordPosition.lettersUsed > 1 && ValidWordPlacement(matcher, wordPosition, match)) || 
+                            (wordPosition.lettersUsed == 1 && ValidWordPlacement(matcher, wordPosition, match) && ValidWordPlacement(matcher, wordPosition.ThisWithOtherDirection(), match)))
                         {
-                            string lettersUsed = match;
-                            foreach (char character in rawBoardLetters)
-                            {
-                                lettersUsed = lettersUsed.Remove(lettersUsed.IndexOf(character), 1);
-                            }
-                            Console.WriteLine("\nFound the word '" + match + "' using the letters '" + lettersUsed + "'");
-                            OutputBoardToConsole(wordPosition, match);
+                            solutions.Add(new ScrabbleSolution(match, wordPosition, rawBoardLetters));
                         }
                     }
                 }
             }
+
+            foreach (ScrabbleSolution solution in solutions)
+            {
+                string lettersUsed = solution.word;
+                foreach (char character in solution.boardLetters)
+                {
+                    lettersUsed = lettersUsed.Remove(lettersUsed.IndexOf(character), 1);
+                }
+                Console.WriteLine("\nFound the word '" + solution.word + "' using the letters '" + lettersUsed + "'");
+                OutputBoardToConsole(solution.position, solution.word);
+            }
+
         }
 
         private List<WordPosition> GenerateWordPositions(int letterCount)
@@ -254,38 +263,13 @@ namespace Scrabble
                             {
                                 WordPosition initialPosition = new WordPosition(placedLetters[firstPosition], length, letterCount, (WordDirection)dir);
 
-                                // Extend the word length to include all the letters after the word
-                                int j = initialPosition.length;
-                                bool running = true;
-                                while (running)
-                                {
-                                    Coord coord = initialPosition.GetCoordAtIndex(j + 1);
-                                    running = TileOnBoard(coord) && !TileIsBlank(coord);
-                                    if (running)
-                                    {
-                                        j++;
-                                    }
-                                }
-                                initialPosition.length = j;
+                                initialPosition = StretchWordPosToFill(initialPosition);
 
-                                // Move and extend the word position to include all the letters before the word too
-                                int k = 0;
-                                Coord newStart = initialPosition.start;
-                                running = true;
-                                while (running)
+                                // TODO This is a bit of a bandaid fix, and will not consider single letter moves. This is only an issue on the first turn of play, and could be considered negligable
+                                if (initialPosition.length > 0)
                                 {
-                                    Coord coord = initialPosition.GetCoordAtIndex(-k - 1);
-                                    running = TileOnBoard(coord) && !TileIsBlank(coord);
-                                    if (running)
-                                    {
-                                        k++;
-                                        newStart = coord;
-                                    }
+                                    positions.Add(initialPosition);
                                 }
-                                initialPosition.length = initialPosition.length + k;
-                                initialPosition.start = newStart;
-
-                                positions.Add(initialPosition);
                             }
 
                             // Move a copy of the last letter until we find a suitable place for it
@@ -325,6 +309,7 @@ namespace Scrabble
             }
 
             return positions;
+
         }
 
         private string ExtractWordPositionFromBoard(WordPosition wordPosition)
@@ -337,6 +322,72 @@ namespace Scrabble
             }
 
             return new string(characters);
+        }
+
+        // Check all the by-words are valid if this word is placed at the given position 
+        // (by-words, aka words that run perpendicular to this one)
+        private bool ValidWordPlacement(MushMatcher matcher, WordPosition wordPosition, string word)
+        {
+            bool validWord = true;
+
+            // Console.WriteLine("\nSource word " + word + "\n" + wordPosition.ToString());
+            // OutputBoardToConsole(wordPosition, word);
+            for (int i = 0; i <= wordPosition.length && validWord; i++)
+            {
+                Coord startCoord = wordPosition.GetCoordAtIndex(i);
+                WordPosition newPosition = new WordPosition(startCoord, 1, 0, (int)wordPosition.wordDirection - 1);
+                // Console.WriteLine("Initial new Word position "+ newPosition);
+                newPosition = StretchWordPosToFill(newPosition);
+                if (newPosition.length > 1)
+                {
+                    // Console.WriteLine("Modified Word position "+ newPosition);
+                    string byWord = ExtractWordPositionFromBoard(newPosition);
+                    // Console.WriteLine("Byword is " + byWord.Replace(defaultBoardChar, '.'));
+                    byWord = byWord.Replace(defaultBoardChar, word[i]);
+                    // Console.WriteLine("Modified byword is " + byWord);
+                    validWord = validWord && matcher.HasExactWord(byWord);
+
+                    // Console.WriteLine("This is a valid word " + validWord);
+                }
+            }
+
+            return validWord;
+        }
+
+        // TODO This is causing issues where it stretches too far. It somehow manages to check 2 letters over instead of just 1
+        private WordPosition StretchWordPosToFill(WordPosition initialPosition)
+        {
+            // Extend the word length to include all the letters after the word
+            int j = initialPosition.length;
+            bool running = true;
+            while (running)
+            {
+                Coord coord = initialPosition.GetCoordAtIndex(j + 1);
+                running = TileOnBoard(coord) && !TileIsBlank(coord);
+                if (running)
+                {
+                    j++;
+                }
+            }
+            initialPosition.length = j;
+
+            // Move and extend the word position to include all the letters before the word too
+            int k = 0;
+            Coord newStart = initialPosition.start;
+            running = true;
+            while (running)
+            {
+                Coord coord = initialPosition.GetCoordAtIndex(-k - 1);
+                running = TileOnBoard(coord) && !TileIsBlank(coord);
+                if (running)
+                {
+                    k++;
+                    newStart = coord;
+                }
+            }
+            initialPosition.length = initialPosition.length + k;
+            initialPosition.start = newStart;
+            return initialPosition;
         }
 
         public void OutputBoardToConsole(WordPosition? wordPosition = null, string? word = null)
@@ -416,7 +467,7 @@ namespace Scrabble
                                         Console.ForegroundColor = ConsoleColor.Magenta;
                                     }
                                     toWrite = word[charIndex];
-                                    charIndex ++;
+                                    charIndex++;
                                 }
                                 else
                                 {
