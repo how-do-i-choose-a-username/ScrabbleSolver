@@ -118,6 +118,11 @@ namespace Scrabble
 
             for (int i = letters.Length; i > 0; i--)
             {
+                // if (i != letters.Length)
+                // {
+                //     break;
+                // }
+
                 List<WordPosition> positions = GenerateWordPositions(i);
 
                 foreach (WordPosition wordPosition in positions)
@@ -244,7 +249,23 @@ namespace Scrabble
 
                             if (wordTouchesLetter)
                             {
-                                positions.Add(new WordPosition(placedLetters[firstPosition], length, letterCount, (WordDirection)dir));
+                                WordPosition initialPosition = new WordPosition(placedLetters[firstPosition], length, letterCount, (WordDirection)dir);
+
+                                // Extend the word length to include all the letters after the word
+                                int j = initialPosition.length;
+                                bool running = true;
+                                while (running)
+                                {
+                                    Coord coord = initialPosition.GetCoordAtIndex(j + 1);
+                                    running = TileOnBoard(coord) && !TileIsBlank(coord);
+                                    if (running)
+                                    {
+                                        j++;
+                                    }
+                                }
+                                initialPosition.length = j;
+
+                                positions.Add(initialPosition);
                             }
 
                             // Move a copy of the last letter until we find a suitable place for it

@@ -6,8 +6,8 @@
 
     t
    friends
-    a    a 
+    a    a r
     i cruise
   gun    l l
            a
-           
+           x
