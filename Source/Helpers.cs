@@ -21,7 +21,7 @@ namespace Source
         }
     }
 
-    public enum WordDirection { RIGHT, DOWN }
+    public enum WordDirection { RIGHT = 0, DOWN = 1 }
 
     public struct Coord
     {
@@ -37,6 +37,22 @@ namespace Source
         public override string ToString()
         {
             return "(" + x + ", " + y + ")";
+        }
+
+        public int this[int i]
+        {
+            get { return (i == 0) ? x : y; }
+            set
+            {
+                if (i == 0)
+                {
+                    x = value;
+                }
+                else
+                {
+                    y = value;
+                }
+            }
         }
     }
 

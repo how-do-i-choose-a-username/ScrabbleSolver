@@ -1,9 +1,14 @@
-using System.Security.Cryptography.X509Certificates;
 using Source;
 
 namespace Scrabble
 {
     enum PowerUp { None, DoubleLetter, TripleLetter, DoubleWord, TripleWord }
+
+    // Logic for the solver is as follows
+    // Generate all possible valid word positions
+    // Find words that could fit in that position
+    // Validate those words against all other letters
+    // Score the remaining words
 
     public class ScrabbleGame
     {
@@ -114,82 +119,101 @@ namespace Scrabble
             }
 
             List<WordPosition> positions = GenerateWordPositions(letters.Length);
-            Console.WriteLine("Positions found: " + positions.Count);
             foreach (WordPosition pos in positions)
             {
-                // Console.WriteLine(pos.ToString());
+                Console.WriteLine(pos.ToString());
             }
+            Console.WriteLine("Positions found: " + positions.Count);
         }
 
         private List<WordPosition> GenerateWordPositions(int letterCount)
         {
             List<WordPosition> positions = new List<WordPosition>();
 
-            for (int i = 0; i < boardDimensions; i++)
+            for (int dir = 0; dir < 2; dir++)
             {
-                int letterIndex = 0;
-                Coord[] placedLetters = new Coord[letterCount];
-
-                // Phase 1, place all letter positions on free tiles
-                for (int j = 0; j < boardDimensions && letterIndex < letterCount; j++)
+                for (int i = 0; i < boardDimensions; i++)
                 {
-                    // If there is no letter on this tile its available
-                    if (TileIsBlank(j, i))
+                    int letterIndex = 0;
+                    Coord[] placedLetters = new Coord[letterCount];
+
+                    // Phase 1, place all letter positions on free tiles
+                    for (int j = 0; j < boardDimensions && letterIndex < letterCount; j++)
                     {
-                        placedLetters[letterIndex] = new Coord(j, i);
-                        letterIndex++;
-                    }
-                }
-
-                // Phase 2, shuffle the letter positions along to get word positions
-                // Ensure we actually placed all of the letters on this row
-                if (letterIndex == letterCount)
-                {
-                    // Move the letter index back to the end of the array
-                    // Letter index points to the last element of the word sequence
-                    letterIndex--;
-
-                    bool runLoop = true;
-                    // Add word positions from the placed letters
-                    do
-                    {
-                        // Get the next array index (looping around to the start)
-                        int firstPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
-                        // int firstPosition = (letterIndex == 0) ? letterCount - 1 : letterIndex - 1;
-                        Console.Write("Array size " + placedLetters.Length + " letterindex " + letterIndex + " last position " + firstPosition + "   ");
-                        int length = placedLetters[letterIndex].x - placedLetters[firstPosition].x + 1;
-                        positions.Add(new WordPosition(placedLetters[firstPosition], length, letterCount, WordDirection.RIGHT));
-                        Console.WriteLine(positions.Last().ToString());
-
-                        // Move a copy of the last letter until we find a suitable place for it
-                        Coord lastLetterPos = placedLetters[letterIndex];
-                        for (int j = lastLetterPos.x + 1; ; j++)
+                        int x, y;
+                        if (dir == 0)
                         {
-                            // Stopping condition for this loop. When it reaches the end also stop the do while loop
-                            if (j >= boardDimensions)
-                            {
-                                runLoop = false;
-                                break;
-                            }
-                            else if (TileIsBlank(j, i))
-                            {
-                                placedLetters[firstPosition] = new Coord(j, i);
-                                letterIndex = firstPosition;
-                                // Once we have placed a letter break this loop and add a new word position
-                                break;
-                            }
+                            x = j;
+                            y = i;
                         }
-                    } while (runLoop);
+                        else
+                        {
+                            x = i;
+                            y = j;
+                        }
+                        // If there is no letter on this tile its available
+                        if (TileIsBlank(x, y))
+                        {
+                            placedLetters[letterIndex] = new Coord(x, y);
+                            letterIndex++;
+                        }
+                    }
+
+                    // Phase 2, shuffle the letter positions along to get word positions
+                    // Ensure we actually placed all of the letters on this row
+                    if (letterIndex == letterCount)
+                    {
+                        // Move the letter index back to the end of the array
+                        // Letter index points to the last element of the word sequence
+                        letterIndex--;
+
+                        bool runLoop = true;
+                        // Add word positions from the placed letters
+                        do
+                        {
+                            // Get the next array index (looping around to the start)
+                            int firstPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
+                            int length = placedLetters[letterIndex][dir] - placedLetters[firstPosition][dir] + 1;
+                            positions.Add(new WordPosition(placedLetters[firstPosition], length, letterCount, (WordDirection)dir));
+
+                            // Move a copy of the last letter until we find a suitable place for it
+                            Coord lastLetterPos = placedLetters[letterIndex];
+                            for (int j = lastLetterPos[dir] + 1; ; j++)
+                            {
+                                // Stopping condition for this loop. When it reaches the end also stop the do while loop
+                                if (j >= boardDimensions)
+                                {
+                                    runLoop = false;
+                                    break;
+                                }
+
+                                int x, y;
+                                if (dir == 0)
+                                {
+                                    x = j;
+                                    y = i;
+                                }
+                                else
+                                {
+                                    x = i;
+                                    y = j;
+                                }
+
+                                if (TileIsBlank(x, y))
+                                {
+                                    placedLetters[firstPosition] = new Coord(x, y);
+                                    letterIndex = firstPosition;
+                                    // Once we have placed a letter break this loop and add a new word position
+                                    break;
+                                }
+                            }
+                        } while (runLoop);
+                    }
                 }
             }
 
             return positions;
         }
-
-        // Generate all possible valid word positions
-        // Find words that could fit in that position
-        // Validate those words against all other letters
-        // Score the remaining words
 
         public void OutputBoardToConsole()
         {
