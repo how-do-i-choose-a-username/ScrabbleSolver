@@ -226,7 +226,7 @@ namespace Scrabble
                         {
                             // Get the next array index (looping around to the start)
                             int firstPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
-                            int length = placedLetters[letterIndex][dir] - placedLetters[firstPosition][dir];
+                            int length = placedLetters[letterIndex][dir] - placedLetters[firstPosition][dir] + 1;
 
                             // Check that the proposed word is a valid move to play i.e. touches other letters
                             bool wordIntersectsLetters = length > letterCount;
@@ -268,7 +268,7 @@ namespace Scrabble
                                 initialPosition = StretchWordPosToFill(initialPosition);
 
                                 // TODO This is a bit of a bandaid fix, and will not consider single letter moves. This is only an issue on the first turn of play, and could be considered negligable
-                                if (initialPosition.length > 0)
+                                if (initialPosition.length > 1)
                                 {
                                     positions.Add(initialPosition);
                                 }
@@ -316,9 +316,9 @@ namespace Scrabble
 
         private string ExtractWordPositionFromBoard(WordPosition wordPosition)
         {
-            char[] characters = new char[wordPosition.length + 1];
+            char[] characters = new char[wordPosition.length];
 
-            for (int i = 0; i <= wordPosition.length; i++)
+            for (int i = 0; i < wordPosition.length; i++)
             {
                 characters[i] = CharAtTile(wordPosition.GetCoordAtIndex(i));
             }
@@ -332,25 +332,17 @@ namespace Scrabble
         {
             bool validWord = true;
 
-            Console.WriteLine("\nSource word " + word + "\n" + wordPosition.ToString());
-            Console.WriteLine("Source Word position "+ wordPosition);
             OutputBoardToConsole(wordPosition, word);
-            for (int i = 0; i <= wordPosition.length && validWord; i++)
+            for (int i = 0; i < wordPosition.length && validWord; i++)
             {
                 Coord startCoord = wordPosition.GetCoordAtIndex(i);
-                WordPosition newPosition = new WordPosition(startCoord, 0, 0, (int)wordPosition.wordDirection - 1);
-                Console.WriteLine("Initial new Word position "+ newPosition);
+                WordPosition newPosition = new WordPosition(startCoord, 1, 0, (int)wordPosition.wordDirection - 1);
                 newPosition = StretchWordPosToFill(newPosition);
-                Console.WriteLine("Modified Word position "+ newPosition);
-                if (newPosition.length > 0)
+                if (newPosition.length > 1)
                 {
                     string byWord = ExtractWordPositionFromBoard(newPosition);
-                    Console.WriteLine("Byword is " + byWord.Replace(defaultBoardChar, '.'));
                     byWord = byWord.Replace(defaultBoardChar, word[i]);
-                    Console.WriteLine("Modified byword is " + byWord);
                     validWord = validWord && matcher.HasExactWord(byWord);
-
-                    // Console.WriteLine("This is a valid word " + validWord);
                 }
             }
 
@@ -364,7 +356,7 @@ namespace Scrabble
             bool running = true;
             while (running)
             {
-                Coord coord = initialPosition.GetCoordAtIndex(j + 1);
+                Coord coord = initialPosition.GetCoordAtIndex(j);
                 running = TileOnBoard(coord) && !TileIsBlank(coord);
                 if (running)
                 {
@@ -443,14 +435,14 @@ namespace Scrabble
                             WordPosition position = (WordPosition)wordPosition;
                             if (position.wordDirection == WordDirection.RIGHT && position.start.y == i)
                             {
-                                if (position.start.x <= j && position.start.x + position.length >= j)
+                                if (position.start.x <= j && position.start.x + position.length > j)
                                 {
                                     writeWordChar = true;
                                 }
                             }
                             else if (position.wordDirection == WordDirection.DOWN && position.start.x == j)
                             {
-                                if (position.start.y <= i && position.start.y + position.length >= i)
+                                if (position.start.y <= i && position.start.y + position.length > i)
                                 {
                                     writeWordChar = true;
                                 }
