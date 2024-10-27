@@ -332,7 +332,6 @@ namespace Scrabble
         {
             bool validWord = true;
 
-            OutputBoardToConsole(wordPosition, word);
             for (int i = 0; i < wordPosition.length && validWord; i++)
             {
                 Coord startCoord = wordPosition.GetCoordAtIndex(i);
