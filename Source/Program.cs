@@ -12,9 +12,11 @@ namespace Source
             //  Make sure that the length is appropriate to what we actually have as data
             if (args.Length == 1 && args[0].Length <= 15)
             {
+                string inputLetters = args[0];
+
                 MushMatcher matcher = new MushMatcher(config);
                 
-                List<string> matches = matcher.FindMatchStrings(args[0], true);
+                List<string> matches = matcher.FindMatchStrings(inputLetters, true);
 
                 matches.Sort(new SortSizeLetters());
 
@@ -23,6 +25,18 @@ namespace Source
                 {
                     Console.WriteLine(match);
                 }
+
+                Console.WriteLine();
+                if (matcher.HasExactWord(inputLetters))
+                {
+                    Console.WriteLine(inputLetters + " is a word");
+                }
+                else
+                {
+                    Console.WriteLine(inputLetters + " is not an exact word");
+                }
+                Console.WriteLine("Letter count: " + inputLetters.Length);
+                Console.WriteLine(matches.Count + " possible words found");
             }
             else if (args.Length == 2)
             {
