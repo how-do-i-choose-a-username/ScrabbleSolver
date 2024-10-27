@@ -68,9 +68,12 @@ namespace Source
         /// Check we have the correct mush lists loaded, if not then lazy load the list
         /// </summary>
         /// <param name="length">Maximum mush length that needs to be loaded</param>
-        private void CheckLoadedMushCollections(int length) {
-            if (length <= Mush.maxWordLength && mushLists.Count < length) {
-                for (int i = mushLists.Count; i < length; i++) {
+        private void CheckLoadedMushCollections(int length)
+        {
+            if (length <= Mush.maxWordLength && mushLists.Count < length)
+            {
+                for (int i = mushLists.Count; i < length; i++)
+                {
                     LoadMushCollection(i + 1);
                 }
             }

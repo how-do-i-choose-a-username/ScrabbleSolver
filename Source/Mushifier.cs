@@ -14,7 +14,7 @@ namespace Source
             pathToWrite = pathToWrite.TrimEnd('\\').TrimEnd('/');
 
             foreach (string fileName in Directory.EnumerateFiles(pathToOpen))
-            {   
+            {
                 string outputPath = fileName.Replace(pathToOpen, pathToWrite);
                 List<Mush> mushes = new List<Mush>();
 

@@ -266,32 +266,19 @@ namespace Scrabble
                             bool letterNextToWord = false;
 
                             // Check the letters next to this word until we find one with contents
-                            if (letterCount == 1)
+                            for (int j = firstPosition; !letterNextToWord; j = (j + 1) % letterCount)
                             {
-                                Coord side1Coord = new Coord(placedLetters[firstPosition], dir - 1, -1);
-                                Coord side2Coord = new Coord(placedLetters[firstPosition], dir - 1, 1);
+                                Coord side1Coord = new Coord(placedLetters[j], dir - 1, -1);
+                                Coord side2Coord = new Coord(placedLetters[j], dir - 1, 1);
 
                                 bool side1 = TileOnBoardAndNotBlank(side1Coord);
                                 bool side2 = TileOnBoardAndNotBlank(side2Coord);
 
-                                letterNextToWord = side1 || side2;
-                            }
-                            else
-                            {
-                                for (int j = firstPosition; !letterNextToWord; j = (j + 1) % letterCount)
+                                letterNextToWord = letterNextToWord || side1 || side2;
+
+                                if (j == letterIndex)
                                 {
-                                    Coord side1Coord = new Coord(placedLetters[j], dir - 1, -1);
-                                    Coord side2Coord = new Coord(placedLetters[j], dir - 1, 1);
-
-                                    bool side1 = TileOnBoardAndNotBlank(side1Coord);
-                                    bool side2 = TileOnBoardAndNotBlank(side2Coord);
-
-                                    letterNextToWord = letterNextToWord || side1 || side2;
-
-                                    if (j == letterIndex)
-                                    {
-                                        break;
-                                    }
+                                    break;
                                 }
                             }
 

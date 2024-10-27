@@ -15,7 +15,7 @@ namespace Source
                 string inputLetters = args[0];
 
                 MushMatcher matcher = new MushMatcher(config);
-                
+
                 List<string> matches = matcher.FindMatchStrings(inputLetters, true);
 
                 matches.Sort(new SortSizeLetters());

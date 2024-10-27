@@ -67,7 +67,7 @@ namespace Source
         {
             if (word.Length > maxWordLength)
             {
-                word = word.Substring(0,maxWordLength);
+                word = word.Substring(0, maxWordLength);
                 badMush = true;
             }
 
@@ -89,7 +89,7 @@ namespace Source
         {
             Int32 result = 0;
 
-            for (char letter = 'a'; letter <= 'z'; letter ++)
+            for (char letter = 'a'; letter <= 'z'; letter++)
             {
                 if (word.Contains(letter))
                 {
@@ -155,7 +155,7 @@ namespace Source
         public override string ToString()
         {
             char[] result = new char[maxWordLength];
-            for (int i = 0; i < result.Length; i ++) { result[i] = ' '; }
+            for (int i = 0; i < result.Length; i++) { result[i] = ' '; }
 
             //  Loop over each of the letter containers
             for (int i = 0; i < letters.Length; i++)
