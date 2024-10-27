@@ -62,6 +62,7 @@ namespace Source
             }
         }
 
+        // TODO This is a bandaid fix
         public override string ToString()
         {
             return "(" + y + ", " + x + ")";
