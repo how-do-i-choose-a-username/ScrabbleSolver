@@ -1,3 +1,4 @@
+using System.Reflection.Metadata;
 using System.Runtime.ConstrainedExecution;
 using Source;
 
@@ -19,6 +20,7 @@ namespace Scrabble
         //  Both of these are x,y with 0,0 at the top left
         private PowerUp[,] powerUps;
         private char[,] lettersOnBoard;
+        private bool[,] blankLettersOnBoard;
 
         private Dictionary<char, int> letterToScore = new Dictionary<char, int>();
 
@@ -30,6 +32,8 @@ namespace Scrabble
         private char CharAtTile(int x, int y) => lettersOnBoard[x, y];
 
         private bool TileOnBoardAndNotBlank(Coord coord) => TileOnBoard(coord) && !TileIsBlank(coord);
+
+        private bool BlankLetterTile(Coord coord) => blankLettersOnBoard[coord.x, coord.y];
 
         private bool TileIsBlank(Coord coord) => TileIsBlank(coord.x, coord.y);
         private bool TileIsBlank(int x, int y) => CharAtTile(x, y) == defaultBoardChar;
@@ -43,6 +47,7 @@ namespace Scrabble
 
             powerUps = new PowerUp[boardDimensions, boardDimensions];
             lettersOnBoard = new char[boardDimensions, boardDimensions];
+            blankLettersOnBoard = new bool[boardDimensions, boardDimensions];
 
             for (int i = 0; i < boardDimensions; i++)
             {
@@ -120,13 +125,16 @@ namespace Scrabble
                 String? line;
                 while ((line = streamReader.ReadLine()) != null && lineNumber < boardDimensions)
                 {
-                    line = line.ToLower();
-
                     for (int i = 0; i < line.Length && i < boardDimensions; i++)
                     {
                         if (line[i] >= 'a' && line[i] <= 'z')
                         {
                             lettersOnBoard[i, lineNumber] = line[i];
+                        }
+                        else if (line[i] >= 'A' && line[i] <= 'Z')
+                        {
+                            lettersOnBoard[i, lineNumber] = (char)(line[i] - ('A' - 'a'));
+                            blankLettersOnBoard[i, lineNumber] = true;
                         }
                     }
 
@@ -434,7 +442,7 @@ namespace Scrabble
             for (int i = 0; i < wordPosition.length; i++)
             {
                 Coord letterCoord = wordPosition.GetCoordAtIndex(i);
-                int letterScore = letterToScore[word[i]];
+                int letterScore = BlankLetterTile(letterCoord) ? 0 : letterToScore[word[i]];
                 if (TileIsBlank(letterCoord))
                 {
                     PowerUp powerUp = powerUps[letterCoord.x, letterCoord.y];
@@ -546,7 +554,7 @@ namespace Scrabble
                                 break;
                         }
 
-                        char toWrite = lettersOnBoard[j, i];
+                        char toWrite = (char)(lettersOnBoard[j, i] + (BlankLetterTile(new Coord(j, i)) ? 'A' - 'a' : 0));
 
                         if ((toWrite == defaultBoardChar || word != null) && wordPosition != null)
                         {
