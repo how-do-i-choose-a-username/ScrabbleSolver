@@ -26,6 +26,8 @@ namespace Scrabble
         private char CharAtTile(Coord coord) => CharAtTile(coord.x, coord.y);
         private char CharAtTile(int x, int y) => lettersOnBoard[x, y];
 
+        private bool TileOnBoardAndNotBlank(Coord coord) => TileOnBoard(coord) && !TileIsBlank(coord);
+
         private bool TileIsBlank(Coord coord) => TileIsBlank(coord.x, coord.y);
         private bool TileIsBlank(int x, int y) => CharAtTile(x, y) == defaultBoardChar;
 
@@ -269,22 +271,27 @@ namespace Scrabble
                                 Coord side1Coord = new Coord(placedLetters[firstPosition], dir - 1, -1);
                                 Coord side2Coord = new Coord(placedLetters[firstPosition], dir - 1, 1);
 
-                                bool side1 = TileOnBoard(side1Coord) && !TileIsBlank(side1Coord);
-                                bool side2 = TileOnBoard(side2Coord) && !TileIsBlank(side2Coord);
+                                bool side1 = TileOnBoardAndNotBlank(side1Coord);
+                                bool side2 = TileOnBoardAndNotBlank(side2Coord);
 
                                 letterNextToWord = side1 || side2;
                             }
                             else
                             {
-                                for (int j = firstPosition; j != letterIndex && !letterNextToWord; j = (j + 1) % letterCount)
+                                for (int j = firstPosition; !letterNextToWord; j = (j + 1) % letterCount)
                                 {
                                     Coord side1Coord = new Coord(placedLetters[j], dir - 1, -1);
                                     Coord side2Coord = new Coord(placedLetters[j], dir - 1, 1);
 
-                                    bool side1 = TileOnBoard(side1Coord) && !TileIsBlank(side1Coord);
-                                    bool side2 = TileOnBoard(side2Coord) && !TileIsBlank(side2Coord);
+                                    bool side1 = TileOnBoardAndNotBlank(side1Coord);
+                                    bool side2 = TileOnBoardAndNotBlank(side2Coord);
 
                                     letterNextToWord = letterNextToWord || side1 || side2;
+
+                                    if (j == letterIndex)
+                                    {
+                                        break;
+                                    }
                                 }
                             }
 
