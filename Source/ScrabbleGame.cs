@@ -114,6 +114,9 @@ namespace Scrabble
         /// <param name="letters">Input letters to use</param>
         public void SolveGame(string letters)
         {
+            // TODO This is failing on the test case of 'dotnet run ..\TestBoard.txt ed a' on the current board. It is not able to find all the words that end with ed correctly
+            // Byword checking is also broken still and will need to be repaired. For example, the bandaid fix of ignoring one letter moves
+            // Testing by placing the characters 'cat' it will generate the word 'ti' with 'tu' as an invalid byword
             MushMatcher matcher = new MushMatcher(config);
 
             Dictionary<int, ICollection<string>> letterCombos = MushMatcher.WordCombinationsByCount(letters);
@@ -155,8 +158,7 @@ namespace Scrabble
 
                     foreach (string match in matches)
                     {
-                        if ((wordPosition.lettersUsed > 1 && ValidWordPlacement(matcher, wordPosition, match)) || 
-                            (wordPosition.lettersUsed == 1 && ValidWordPlacement(matcher, wordPosition, match) && ValidWordPlacement(matcher, wordPosition.ThisWithOtherDirection(), match)))
+                        if (ValidWordPlacement(matcher, wordPosition, match))
                         {
                             solutions.Add(new ScrabbleSolution(match, wordPosition, rawBoardLetters));
                         }
@@ -330,21 +332,22 @@ namespace Scrabble
         {
             bool validWord = true;
 
-            // Console.WriteLine("\nSource word " + word + "\n" + wordPosition.ToString());
-            // OutputBoardToConsole(wordPosition, word);
+            Console.WriteLine("\nSource word " + word + "\n" + wordPosition.ToString());
+            Console.WriteLine("Source Word position "+ wordPosition);
+            OutputBoardToConsole(wordPosition, word);
             for (int i = 0; i <= wordPosition.length && validWord; i++)
             {
                 Coord startCoord = wordPosition.GetCoordAtIndex(i);
-                WordPosition newPosition = new WordPosition(startCoord, 1, 0, (int)wordPosition.wordDirection - 1);
-                // Console.WriteLine("Initial new Word position "+ newPosition);
+                WordPosition newPosition = new WordPosition(startCoord, 0, 0, (int)wordPosition.wordDirection - 1);
+                Console.WriteLine("Initial new Word position "+ newPosition);
                 newPosition = StretchWordPosToFill(newPosition);
-                if (newPosition.length > 1)
+                Console.WriteLine("Modified Word position "+ newPosition);
+                if (newPosition.length > 0)
                 {
-                    // Console.WriteLine("Modified Word position "+ newPosition);
                     string byWord = ExtractWordPositionFromBoard(newPosition);
-                    // Console.WriteLine("Byword is " + byWord.Replace(defaultBoardChar, '.'));
+                    Console.WriteLine("Byword is " + byWord.Replace(defaultBoardChar, '.'));
                     byWord = byWord.Replace(defaultBoardChar, word[i]);
-                    // Console.WriteLine("Modified byword is " + byWord);
+                    Console.WriteLine("Modified byword is " + byWord);
                     validWord = validWord && matcher.HasExactWord(byWord);
 
                     // Console.WriteLine("This is a valid word " + validWord);
@@ -354,7 +357,6 @@ namespace Scrabble
             return validWord;
         }
 
-        // TODO This is causing issues where it stretches too far. It somehow manages to check 2 letters over instead of just 1
         private WordPosition StretchWordPosToFill(WordPosition initialPosition)
         {
             // Extend the word length to include all the letters after the word
@@ -372,21 +374,17 @@ namespace Scrabble
             initialPosition.length = j;
 
             // Move and extend the word position to include all the letters before the word too
-            int k = 0;
-            Coord newStart = initialPosition.start;
             running = true;
             while (running)
             {
-                Coord coord = initialPosition.GetCoordAtIndex(-k - 1);
+                Coord coord = initialPosition.GetCoordAtIndex(-1);
                 running = TileOnBoard(coord) && !TileIsBlank(coord);
                 if (running)
                 {
-                    k++;
-                    newStart = coord;
+                    initialPosition.length++;
+                    initialPosition.start = coord;
                 }
             }
-            initialPosition.length = initialPosition.length + k;
-            initialPosition.start = newStart;
             return initialPosition;
         }
 

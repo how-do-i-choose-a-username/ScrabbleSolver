@@ -75,6 +75,7 @@ namespace Source
     {
         public Coord start { get; internal set; }
 
+        // Actual length is length + 1
         public int length { get; internal set; }
 
         public int lettersUsed { get; internal set; }
