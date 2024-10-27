@@ -178,6 +178,11 @@ namespace Scrabble
                         int score = CalculateScore(matcher, wordPosition, match);
                         if (score >= 0)
                         {
+                            if (i >= 7)
+                            {
+                                score += 50;
+                            }
+
                             solutions.Add(new ScrabbleSolution(match, wordPosition, rawBoardLetters, score));
                         }
                     }
@@ -186,9 +191,11 @@ namespace Scrabble
 
             solutions.Sort();
 
-            foreach (ScrabbleSolution solution in solutions)
+            for (int i = Math.Max(0, solutions.Count - 10); i < solutions.Count; i++)
             {
+                ScrabbleSolution solution = solutions[i];
                 // Recalculate which of the input letters are used for this word
+
                 string lettersUsed = solution.word;
                 foreach (char character in solution.boardLetters)
                 {
