@@ -7,8 +7,8 @@ namespace Source
             int result;
 
             //  Make sure a and b are not null
-            a = a == null ? a = "" : a;
-            b = b == null ? b = "" : b;
+            a = a == null ? "" : a;
+            b = b == null ? "" : b;
 
             result = a.Length.CompareTo(b.Length);
 
@@ -16,6 +16,19 @@ namespace Source
             {
                 result = a.CompareTo(b);
             }
+
+            return result;
+        }
+    }
+
+    public class SortSolutionsByLength : IComparer<ScrabbleSolution>
+    {
+        int IComparer<ScrabbleSolution>.Compare(ScrabbleSolution? a, ScrabbleSolution? b)
+        {
+            int aValue = a == null ? 0 : a.word.Length;
+            int bValue = b == null ? 0 : b.word.Length;
+
+            int result = aValue.CompareTo(bValue);
 
             return result;
         }
@@ -51,7 +64,7 @@ namespace Source
 
         public override string ToString()
         {
-            return "(" + x + ", " + y + ")";
+            return "(" + y + ", " + x + ")";
         }
 
         public int this[int i]
@@ -68,6 +81,33 @@ namespace Source
                     y = value;
                 }
             }
+        }
+
+        public override bool Equals(object? obj)
+        {
+            bool equals = false;
+
+            if (obj is Coord coord)
+            {
+                equals = coord.x == x && coord.y == y;
+            }
+
+            return equals;
+        }
+
+        public static bool operator ==(Coord left, Coord right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Coord left, Coord right)
+        {
+            return !(left == right);
+        }
+
+        public override int GetHashCode()
+        {
+            return x + y;
         }
     }
 
@@ -116,7 +156,7 @@ namespace Source
 
         public override string ToString()
         {
-            return "Start: " + start.ToString() + " Length: " + length + " Direction: " + wordDirection.ToString("D");
+            return "Start: " + start.ToString() + " Length: " + length + " Direction: " + ((wordDirection == 0) ? "Right" : "Down");
         }
     }
 

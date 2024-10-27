@@ -13,6 +13,7 @@ namespace Source
             if (args.Length == 1 && args[0].Length <= 15)
             {
                 string inputLetters = args[0];
+                inputLetters = inputLetters.ToLower();
 
                 MushMatcher matcher = new MushMatcher(config);
 
@@ -51,7 +52,7 @@ namespace Source
 
                 game.LoadGameState(args[0]);
 
-                game.SolveGame(args[1]);
+                game.SolveGame(args[1].ToLower());
             }
             else
             {

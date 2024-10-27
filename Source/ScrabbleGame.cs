@@ -1,3 +1,4 @@
+using System.Runtime.ConstrainedExecution;
 using Source;
 
 namespace Scrabble
@@ -22,6 +23,8 @@ namespace Scrabble
         private Dictionary<char, int> letterToScore = new Dictionary<char, int>();
 
         private Config config;
+
+        private bool logging;
 
         private char CharAtTile(Coord coord) => CharAtTile(coord.x, coord.y);
         private char CharAtTile(int x, int y) => lettersOnBoard[x, y];
@@ -150,11 +153,18 @@ namespace Scrabble
 
                 foreach (WordPosition wordPosition in positions)
                 {
+                    logging = wordPosition.start == new Coord(0, 0) && wordPosition.length == 15;
+
                     List<string> matches = new List<string>();
 
                     // Get the letters from that board position and process them
                     string lettersAtPosition = ExtractWordPositionFromBoard(wordPosition);
                     string rawBoardLetters = lettersAtPosition.Replace(defaultBoardChar.ToString(), "");
+
+                    if (logging)
+                    {
+                        Console.WriteLine("Selected letters from the board: " + lettersAtPosition.Replace(defaultBoardChar, '.'));
+                    }
 
                     // No characters collected from the board, just find a word normally
                     if (string.IsNullOrEmpty(rawBoardLetters))
@@ -171,13 +181,28 @@ namespace Scrabble
 
                         foreach (string letterCombo in letterCombos[i])
                         {
-                            matches.AddRange(matcher.FindMatchStrings(rawBoardLetters + letterCombo, false, lettersMask));
+                            List<string> subMatches = matcher.FindMatchStrings(rawBoardLetters + letterCombo, false, lettersMask);
+                            matches.AddRange(subMatches);
+
+                            if (logging)
+                            {
+                                foreach(string match in subMatches)
+                                {
+                                    Console.WriteLine("Found the word: " + match);
+                                }
+                            }
                         }
                     }
 
                     foreach (string match in matches)
                     {
                         int score = CalculateScore(matcher, wordPosition, match);
+
+                        if (logging)
+                        {
+                            Console.WriteLine("Score for word " + match + " is " + score);
+                        }
+
                         if (score >= 0)
                         {
                             if (i >= 7)
@@ -367,13 +392,23 @@ namespace Scrabble
                 {
                     string byWord = ExtractWordPositionFromBoard(newPosition);
                     string filledByWord = byWord.Replace(defaultBoardChar, word[i]);
-                    validWord = matcher.HasExactWord(filledByWord);
-
-                    // If the current byword was created thanks to the letters being placed, then score it
-                    if (validWord && byWord.Contains(defaultBoardChar))
+                    
+                    // If the current byword was created thanks to the letters being placed, then work with it
+                    if (byWord.Contains(defaultBoardChar))
                     {
-                        score += ScoreWord(newPosition, filledByWord);
+                        validWord = matcher.HasExactWord(filledByWord);
+                        // Only score valid words
+                        if (validWord)
+                        {
+                            score += ScoreWord(newPosition, filledByWord);
+                        }
                     }
+
+                    if (logging)
+                    {
+                        Console.WriteLine("Found the byword " + byWord.Replace(defaultBoardChar, '.') + " filled to be " + filledByWord);
+                    }
+
                 }
             }
 
