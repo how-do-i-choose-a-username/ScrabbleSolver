@@ -120,7 +120,7 @@ namespace Source
         }
     }
 
-    public class ScrabbleSolution
+    public class ScrabbleSolution : IComparable
     {
         public string word;
         public WordPosition position;
@@ -128,11 +128,24 @@ namespace Source
 
         public string boardLetters;
 
-        public ScrabbleSolution(string word, WordPosition position, string boardLetters)
+        public ScrabbleSolution(string word, WordPosition position, string boardLetters, int score)
         {
             this.word = word;
             this.position = position;
             this.boardLetters = boardLetters;
+            this.score = score;
+        }
+
+        public int CompareTo(object? obj)
+        {
+            int result = 0;
+
+            if (obj is ScrabbleSolution solution)
+            {
+                result = score.CompareTo(solution.score);
+            }
+
+            return result;
         }
     }
 }

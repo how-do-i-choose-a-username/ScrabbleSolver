@@ -47,9 +47,9 @@ namespace Source
             else if (args.Length == 3)
             {
                 ScrabbleGame game = new ScrabbleGame(config);
-                game.LoadScrabblePowerUps(config.powerUpsFile);
+                game.Load();
 
-                game.LoadScrabbleLetters(args[0]);
+                game.LoadGameState(args[0]);
 
                 game.SolveGame(args[1]);
             }

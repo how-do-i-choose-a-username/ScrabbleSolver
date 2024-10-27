@@ -19,6 +19,8 @@ namespace Scrabble
         private PowerUp[,] powerUps;
         private char[,] lettersOnBoard;
 
+        private Dictionary<char, int> letterToScore = new Dictionary<char, int>();
+
         private Config config;
 
         private char CharAtTile(Coord coord) => CharAtTile(coord.x, coord.y);
@@ -44,6 +46,12 @@ namespace Scrabble
                     lettersOnBoard[i, j] = defaultBoardChar;
                 }
             }
+        }
+
+        public void Load()
+        {
+            LoadScrabblePowerUps(config.powerUpsFile);
+            LoadLetterScores(config.letterScoresFile);
         }
 
         public void LoadScrabblePowerUps(string powerUpsPath)
@@ -85,7 +93,21 @@ namespace Scrabble
             }
         }
 
-        public void LoadScrabbleLetters(string path)
+        private void LoadLetterScores(string letterScorePath)
+        {
+            using (var streamReader = new StreamReader(File.OpenRead(letterScorePath)))
+            {
+                string? line = "";
+                while ((line = streamReader.ReadLine()) != null)
+                {
+                    string[] parts = line.Split(" ");
+
+                    letterToScore.Add(parts[0][0], Convert.ToInt32(parts[1]));
+                }
+            }
+        }
+
+        public void LoadGameState(string path)
         {
             using (var streamReader = new StreamReader(File.OpenRead(path)))
             {
@@ -114,9 +136,6 @@ namespace Scrabble
         /// <param name="letters">Input letters to use</param>
         public void SolveGame(string letters)
         {
-            // TODO This is failing on the test case of 'dotnet run ..\TestBoard.txt ed a' on the current board. It is not able to find all the words that end with ed correctly
-            // Byword checking is also broken still and will need to be repaired. For example, the bandaid fix of ignoring one letter moves
-            // Testing by placing the characters 'cat' it will generate the word 'ti' with 'tu' as an invalid byword
             MushMatcher matcher = new MushMatcher(config);
 
             Dictionary<int, ICollection<string>> letterCombos = MushMatcher.WordCombinationsByCount(letters);
@@ -154,26 +173,29 @@ namespace Scrabble
                         }
                     }
 
-                    matches.Sort(new SortSizeLetters());
-
                     foreach (string match in matches)
                     {
-                        if (ValidWordPlacement(matcher, wordPosition, match))
+                        int score = CalculateScore(matcher, wordPosition, match);
+                        if (score >= 0)
                         {
-                            solutions.Add(new ScrabbleSolution(match, wordPosition, rawBoardLetters));
+                            solutions.Add(new ScrabbleSolution(match, wordPosition, rawBoardLetters, score));
                         }
                     }
                 }
             }
 
+            solutions.Sort();
+
             foreach (ScrabbleSolution solution in solutions)
             {
+                // Recalculate which of the input letters are used for this word
                 string lettersUsed = solution.word;
                 foreach (char character in solution.boardLetters)
                 {
                     lettersUsed = lettersUsed.Remove(lettersUsed.IndexOf(character), 1);
                 }
-                Console.WriteLine("\nFound the word '" + solution.word + "' using the letters '" + lettersUsed + "'");
+
+                Console.WriteLine("\nFound the word '" + solution.word + "' using the letters '" + lettersUsed + "' with a score of " + solution.score);
                 OutputBoardToConsole(solution.position, solution.word);
             }
 
@@ -267,7 +289,8 @@ namespace Scrabble
 
                                 initialPosition = StretchWordPosToFill(initialPosition);
 
-                                // TODO This is a bit of a bandaid fix, and will not consider single letter moves. This is only an issue on the first turn of play, and could be considered negligable
+                                // This is a bit of a bandaid fix, and will not consider single letter moves. 
+                                // This is only an issue on the first turn of play, and is considered negligable
                                 if (initialPosition.length > 1)
                                 {
                                     positions.Add(initialPosition);
@@ -328,9 +351,11 @@ namespace Scrabble
 
         // Check all the by-words are valid if this word is placed at the given position 
         // (by-words, aka words that run perpendicular to this one)
-        private bool ValidWordPlacement(MushMatcher matcher, WordPosition wordPosition, string word)
+        // In the process of doing this, calculate the score from this word
+        private int CalculateScore(MushMatcher matcher, WordPosition wordPosition, string word)
         {
             bool validWord = true;
+            int score = 0;
 
             for (int i = 0; i < wordPosition.length && validWord; i++)
             {
@@ -340,12 +365,71 @@ namespace Scrabble
                 if (newPosition.length > 1)
                 {
                     string byWord = ExtractWordPositionFromBoard(newPosition);
-                    byWord = byWord.Replace(defaultBoardChar, word[i]);
-                    validWord = validWord && matcher.HasExactWord(byWord);
+                    string filledByWord = byWord.Replace(defaultBoardChar, word[i]);
+                    validWord = matcher.HasExactWord(filledByWord);
+
+                    // If the current byword was created thanks to the letters being placed, then score it
+                    if (validWord && byWord.Contains(defaultBoardChar))
+                    {
+                        score += ScoreWord(newPosition, filledByWord);
+                    }
                 }
             }
 
-            return validWord;
+            if (validWord)
+            {
+                score += ScoreWord(wordPosition, word);
+            }
+            else
+            {
+                score = -1;
+            }
+
+            return score;
+        }
+
+        // Calculate the score from placing the given word at the given position
+        // Looks at the current board to determine which letters are being placed by you
+        private int ScoreWord(WordPosition wordPosition, string word)
+        {
+            int score = 0;
+            int wordMultiplier = 1;
+
+            for (int i = 0; i < wordPosition.length; i++)
+            {
+                Coord letterCoord = wordPosition.GetCoordAtIndex(i);
+                int letterScore = letterToScore[word[i]];
+                if (TileIsBlank(letterCoord))
+                {
+                    PowerUp powerUp = powerUps[letterCoord.x, letterCoord.y];
+
+                    switch (powerUp)
+                    {
+                        case PowerUp.None:
+                            break;
+                        case PowerUp.DoubleLetter:
+                            letterScore *= 2;
+                            break;
+                        case PowerUp.TripleLetter:
+                            letterScore *= 3;
+                            break;
+                        case PowerUp.DoubleWord:
+                            wordMultiplier *= 2;
+                            break;
+                        case PowerUp.TripleWord:
+                            wordMultiplier *= 3;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                score += letterScore;
+            }
+
+            score *= wordMultiplier;
+
+            return score;
         }
 
         private WordPosition StretchWordPosToFill(WordPosition initialPosition)

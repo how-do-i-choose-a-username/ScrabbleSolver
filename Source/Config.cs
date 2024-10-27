@@ -10,6 +10,7 @@ namespace Source
         public string path { get; internal set; } = "";
         public string mushGroupPrefix { get; internal set; } = "";
         public string powerUpsFile { get; internal set; } = "powerups.config";
+        public string letterScoresFile {get; internal set;} = "lettervalues.config";
 
         public void LoadConfig()
         {
@@ -35,6 +36,9 @@ namespace Source
                                 break;
                             case "powerups":
                                 powerUpsFile = value;
+                                break;
+                            case "lettervalues":
+                                letterScoresFile = value;
                                 break;
                             default:
                                 break;
