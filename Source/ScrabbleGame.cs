@@ -1,5 +1,4 @@
-using System.Reflection.Metadata;
-using System.Runtime.ConstrainedExecution;
+using System.Diagnostics;
 using Source;
 
 namespace Scrabble
@@ -149,6 +148,8 @@ namespace Scrabble
         /// <param name="letters">Input letters to use</param>
         public void SolveGame(string letters)
         {
+            long startTime = Stopwatch.GetTimestamp();
+
             MushMatcher matcher = new MushMatcher(config);
 
             Dictionary<int, ICollection<string>> letterCombos = MushMatcher.WordCombinationsByCount(letters);
@@ -224,6 +225,9 @@ namespace Scrabble
                 }
             }
 
+            TimeSpan calculationTime = Stopwatch.GetElapsedTime(startTime);
+            long printStartTime = Stopwatch.GetTimestamp();
+
             solutions.Sort();
 
             for (int i = Math.Max(0, solutions.Count - 10); i < solutions.Count; i++)
@@ -241,6 +245,12 @@ namespace Scrabble
                 OutputBoardToConsole(solution.position, solution.word);
             }
 
+            TimeSpan printTime = Stopwatch.GetElapsedTime(printStartTime);
+
+            Console.WriteLine();
+            Console.WriteLine("Found " + solutions.Count + " solutions for the letters " + letters + " on the given board");
+            Console.WriteLine("Calculation time: " + calculationTime.TotalSeconds + "s");
+            Console.WriteLine("Printing time: " + printTime.TotalSeconds + "s");
         }
 
         private List<WordPosition> GenerateWordPositions(int letterCount)
