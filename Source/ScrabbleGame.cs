@@ -386,7 +386,6 @@ namespace Scrabble
         // Check all the by-words are valid if this word is placed at the given position 
         // (by-words, aka words that run perpendicular to this one)
         // In the process of doing this, calculate the score from this word
-        // TODO Score all words, valid or not to catch the cases where an invalid word exists on the board
         private int CalculateScore(MushMatcher matcher, WordPosition wordPosition, string word)
         {
             bool validWord = true;
@@ -406,11 +405,7 @@ namespace Scrabble
                     if (byWord.Contains(defaultBoardChar))
                     {
                         validWord = matcher.HasExactWord(filledByWord);
-                        // Only score valid words
-                        if (validWord)
-                        {
-                            score += ScoreWord(newPosition, filledByWord);
-                        }
+                        score += ScoreWord(newPosition, filledByWord);
                     }
 
                     if (logging)
