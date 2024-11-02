@@ -1,18 +1,68 @@
 ﻿using Scrabble;
+using CommandLine;
 
 namespace Source
 {
     class Program
     {
+        public class Arguments
+        {
+            [Option('l', HelpText = "Letters to process to find words with")]
+            public string Letters
+            {
+                get
+                {
+                    return lettersInternal;
+                }
+                set
+                {
+                    if (value.Length > 15)
+                    {
+                        lettersInternal = value.Substring(0, 15);
+                    }
+                    else
+                    {
+                        lettersInternal = value;
+                    }
+                }
+            }
+
+            private string lettersInternal = "";
+
+            [Option('b', HelpText = "Path to Scrabble board to load")]
+            public string Board { get; set; } = "";
+
+            [Option('i', HelpText = "Input directory with files for mushifying")]
+            public string InputDirectory { get; set; } = "";
+
+            [Option('o', HelpText = "Output directory to write files after mushifying")]
+            public string OutputDirectory { get; set; } = "";
+
+            public bool FindWords() => Letters.Length > 0 && Board == "";
+            public bool SolveGame() => Letters.Length > 0 && Board.Length > 0;
+            public bool MushifyDirectory() => InputDirectory.Length > 0 && OutputDirectory.Length > 0;
+        }
+
         static void Main(string[] args)
+        {
+            Parser.Default.ParseArguments<Arguments>(args).WithParsed<Arguments>(RunProgram);
+        }
+
+        private static void RunProgram(Arguments args)
         {
             Config config = new Config();
             config.LoadConfig();
 
-            //  Make sure that the length is appropriate to what we actually have as data
-            if (args.Length == 1 && args[0].Length <= 15)
+            if (args.MushifyDirectory())
             {
-                string inputLetters = args[0];
+                Mushifier mushifier = new Mushifier();
+
+                mushifier.MushifyDirectory(args.InputDirectory, args.OutputDirectory);
+            }
+
+            if (args.FindWords())
+            {
+                string inputLetters = args.Letters;
                 inputLetters = inputLetters.ToLower();
 
                 MushMatcher matcher = new MushMatcher(config);
@@ -39,27 +89,14 @@ namespace Source
                 Console.WriteLine("Letter count: " + inputLetters.Length);
                 Console.WriteLine(matches.Count + " possible words found");
             }
-            else if (args.Length == 2)
-            {
-                Mushifier mushifier = new Mushifier();
-
-                mushifier.MushifyDirectory(args[0], args[1]);
-            }
-            else if (args.Length == 3)
+            else if (args.SolveGame())
             {
                 ScrabbleGame game = new ScrabbleGame(config);
                 game.Load();
 
-                game.LoadGameState(args[0]);
+                game.LoadGameState(args.Board);
 
-                game.SolveGame(args[1].ToLower());
-            }
-            else
-            {
-                Console.WriteLine("Operating modes:");
-                Console.WriteLine("Provide a character string (max length 15), and the program will search the mushes for a match.");
-                Console.WriteLine("Provide two strings and it will mushify from the first directory to the second.");
-                Console.WriteLine("Provide three strings to solve a game. The first string is the game board directory, the second is the letters to use, the third does nothing.");
+                game.SolveGame(args.Letters.ToLower());
             }
         }
     }
