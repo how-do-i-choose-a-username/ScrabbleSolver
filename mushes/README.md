@@ -1,4 +1,4 @@
-The contents of these included mushes were processed from several Ubuntu dictionary packages.
+The contents of these included mushes were processed from several Ubuntu dictionary packages (included in the WordLists directory).
 - becs-mush -> wbritish
 - beics-mush -> wbritish-insane
 - belcs-mush -> wbritish-large
