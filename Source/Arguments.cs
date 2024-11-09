@@ -116,7 +116,7 @@ namespace Source
                 }
             }
 
-            if (string.IsNullOrEmpty(key) && commandArgs.Length > 0)
+            if (!string.IsNullOrEmpty(key) && commandArgs.Length > 0)
             {
                 Console.WriteLine("Found key '" + key + "' with no associated value");
             }

@@ -22,6 +22,8 @@ namespace Source
         {
             Config config = args.ReadConfig();
 
+            // The following commented code is to generate the mushed dictionary files
+            // I havent taken the time to update it to support the new command line interface
             // if (args.MushifyDirectory())
             // {
             //     Mushifier mushifier = new Mushifier();

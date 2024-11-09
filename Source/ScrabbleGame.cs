@@ -67,80 +67,101 @@ namespace Scrabble
 
         public void LoadScrabblePowerUps(string powerUpsPath)
         {
-            using (var streamReader = new StreamReader(File.OpenRead(powerUpsPath)))
+            try
             {
-                int i = 0;
-                int character;
-                while ((character = streamReader.Read()) > 0)
+                using (var streamReader = new StreamReader(File.OpenRead(powerUpsPath)))
                 {
-                    //  If its a newline character, just skip it
-                    if (character != '\n')
+                    int i = 0;
+                    int character;
+                    while ((character = streamReader.Read()) > 0)
                     {
-                        PowerUp powerUp = PowerUp.None;
-
-                        switch (character)
+                        //  If its a newline character, just skip it
+                        if (character != '\n')
                         {
-                            case 'd':
-                                powerUp = PowerUp.DoubleLetter;
-                                break;
-                            case 't':
-                                powerUp = PowerUp.TripleLetter;
-                                break;
-                            case 'D':
-                                powerUp = PowerUp.DoubleWord;
-                                break;
-                            case 'T':
-                                powerUp = PowerUp.TripleWord;
-                                break;
-                            default:
-                                break;
+                            PowerUp powerUp = PowerUp.None;
+
+                            switch (character)
+                            {
+                                case 'd':
+                                    powerUp = PowerUp.DoubleLetter;
+                                    break;
+                                case 't':
+                                    powerUp = PowerUp.TripleLetter;
+                                    break;
+                                case 'D':
+                                    powerUp = PowerUp.DoubleWord;
+                                    break;
+                                case 'T':
+                                    powerUp = PowerUp.TripleWord;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            powerUps[i % boardDimensions, i / boardDimensions] = powerUp;
+
+                            i += 1;
                         }
-
-                        powerUps[i % boardDimensions, i / boardDimensions] = powerUp;
-
-                        i += 1;
                     }
                 }
+            }
+            catch
+            {
+                Console.WriteLine("Failed to load the letter and word multipliers. Please ensure the file path is set correctly and that the file is formatted correctly.");
             }
         }
 
         private void LoadLetterScores(string letterScorePath)
         {
-            using (var streamReader = new StreamReader(File.OpenRead(letterScorePath)))
+            try
             {
-                string? line = "";
-                while ((line = streamReader.ReadLine()) != null)
+                using (var streamReader = new StreamReader(File.OpenRead(letterScorePath)))
                 {
-                    string[] parts = line.Split(" ");
+                    string? line = "";
+                    while ((line = streamReader.ReadLine()) != null)
+                    {
+                        string[] parts = line.Split(" ");
 
-                    letterToScore.Add(parts[0][0], Convert.ToInt32(parts[1]));
+                        letterToScore.Add(parts[0][0], Convert.ToInt32(parts[1]));
+                    }
                 }
+            }
+            catch
+            {
+                Console.WriteLine("Failed to load the letter scores. Please ensure the file path is set correctly and that the file is formatted correctly.");
             }
         }
 
         private void LoadGameState(string path)
         {
-            using (var streamReader = new StreamReader(File.OpenRead(path)))
+            try
             {
-                int lineNumber = 0;
-                String? line;
-                while ((line = streamReader.ReadLine()) != null && lineNumber < boardDimensions)
+                using (var streamReader = new StreamReader(File.OpenRead(path)))
                 {
-                    for (int i = 0; i < line.Length && i < boardDimensions; i++)
+                    int lineNumber = 0;
+                    String? line;
+                    while ((line = streamReader.ReadLine()) != null && lineNumber < boardDimensions)
                     {
-                        if (line[i] >= 'a' && line[i] <= 'z')
+                        for (int i = 0; i < line.Length && i < boardDimensions; i++)
                         {
-                            lettersOnBoard[i, lineNumber] = line[i];
+                            if (line[i] >= 'a' && line[i] <= 'z')
+                            {
+                                lettersOnBoard[i, lineNumber] = line[i];
+                            }
+                            else if (line[i] >= 'A' && line[i] <= 'Z')
+                            {
+                                lettersOnBoard[i, lineNumber] = (char)(line[i] - ('A' - 'a'));
+                                blankLettersOnBoard[i, lineNumber] = true;
+                            }
                         }
-                        else if (line[i] >= 'A' && line[i] <= 'Z')
-                        {
-                            lettersOnBoard[i, lineNumber] = (char)(line[i] - ('A' - 'a'));
-                            blankLettersOnBoard[i, lineNumber] = true;
-                        }
-                    }
 
-                    lineNumber += 1;
+                        lineNumber += 1;
+                    }
                 }
+            }
+            catch
+            {
+                Console.WriteLine("Failed to load the initial game board. Please ensure the file path is set correctly and that the file is formatted correctly.");
             }
         }
 
@@ -197,7 +218,7 @@ namespace Scrabble
 
                             if (logging)
                             {
-                                foreach(string match in subMatches)
+                                foreach (string match in subMatches)
                                 {
                                     Console.WriteLine("Found the word: " + match);
                                 }
@@ -412,7 +433,7 @@ namespace Scrabble
                 {
                     string byWord = ExtractWordPositionFromBoard(newPosition);
                     string filledByWord = byWord.Replace(defaultBoardChar, word[i]);
-                    
+
                     // If the current byword was created thanks to the letters being placed, then work with it
                     if (byWord.Contains(defaultBoardChar))
                     {
