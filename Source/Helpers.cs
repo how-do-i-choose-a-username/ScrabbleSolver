@@ -62,7 +62,8 @@ namespace Source
             }
         }
 
-        // TODO This is a bandaid fix
+        // Somewhere along the way x and y managed to swap. Not sure how I managed that.
+        // Outputting y then x gives the correct coordinates when looking at the board output on the console.
         public override string ToString()
         {
             return "(" + y + ", " + x + ")";

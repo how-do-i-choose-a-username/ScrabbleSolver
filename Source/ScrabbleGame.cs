@@ -16,7 +16,8 @@ namespace Scrabble
         private static readonly int boardDimensions = 15;
         private static readonly char defaultBoardChar = ' ';
 
-        //  Both of these are x,y with 0,0 at the top left
+        //  All of these are y,x with 0,0 at the top left
+        //  It was supposed to be x,y but something got muddled and this is what works
         private PowerUp[,] powerUps;
         private char[,] lettersOnBoard;
         private bool[,] blankLettersOnBoard;
