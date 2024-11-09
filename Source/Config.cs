@@ -5,8 +5,11 @@ namespace Source
     /// </summary>
     public class Config
     {
+        public bool FindWords() => !string.IsNullOrEmpty(letters) && !string.IsNullOrEmpty(mushesDirectory);
+        public bool SolveGame() => FindWords() && !string.IsNullOrEmpty(gameBoardFile);
+
         public string letters {get; internal set;} = "";
-        public string path { get; internal set; } = "";
+        public string mushesDirectory { get; internal set; } = "";
         public string mushGroupPrefix { get; internal set; } = "";
         public string mushGroupSuffix { get; internal set; } = "";
         public string powerUpsFile { get; internal set; } = "powerups.config";
@@ -52,7 +55,7 @@ namespace Source
                     letters = value;
                     break;
                 case ValueKeys.MUSHES:
-                    path = value;
+                    mushesDirectory = value;
                     break;
                 case ValueKeys.MUSH_GROUP_PREFIX:
                     mushGroupPrefix = value;

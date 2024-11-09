@@ -5,46 +5,13 @@ namespace Source
     /// </summary>
     public class Arguments
     {
-        public string Letters
-        {
-            get
-            {
-                return lettersInternal;
-            }
-            set
-            {
-                if (value.Length > 15)
-                {
-                    lettersInternal = value.Substring(0, 15);
-                }
-                else
-                {
-                    lettersInternal = value;
-                }
-            }
-        }
-
-        // The letters to solve with
-        private string lettersInternal = "";
-
-        // Path to the game board to load
-        public string Board { get; set; } = "";
-
-        // Input directory of files to be mushed
-        public string InputDirectory { get; set; } = "";
-
-        // Output directory of files that have been mushed
-        public string OutputDirectory { get; set; } = "";
-
-        public bool FindWords() => Letters.Length > 0 && Board == "";
-        public bool SolveGame() => true;
-        public bool MushifyDirectory() => InputDirectory.Length > 0 && OutputDirectory.Length > 0;
-
         private readonly string defaultConfigFile = "program.config";
 
         private string[] defaultParameterKeys = new string[] { ValueKeys.LETTERS, ValueKeys.GAMEBOARD_FILE };
 
         private string[] commandArgs = new string[0];
+
+        private Config? config;
 
         public Arguments(string[] args)
         {
@@ -56,7 +23,20 @@ namespace Source
 
         public Config ReadConfig()
         {
-            Config config = new Config();
+            if (config == null)
+            {
+                LoadConfig();
+            }
+
+            // If config would otherwise be null it gets initalised
+#pragma warning disable CS8603
+            return config;
+#pragma warning restore CS8603
+        }
+
+        private void LoadConfig()
+        {
+            config = new Config();
 
             config.LoadConfigFile(defaultConfigFile);
 
@@ -121,7 +101,11 @@ namespace Source
                 }
             }
 
-            return config;
+            if (string.IsNullOrEmpty(key))
+            {
+                Console.WriteLine("Found key '" + key + "' with no associated value");
+            }
+
         }
     }
 }

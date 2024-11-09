@@ -15,14 +15,21 @@ namespace Source
         {
             Config config = args.ReadConfig();
 
-            if (args.MushifyDirectory())
+            // if (args.MushifyDirectory())
+            // {
+            //     Mushifier mushifier = new Mushifier();
+
+            //     mushifier.MushifyDirectory(args.InputDirectory, args.OutputDirectory);
+            // }
+
+            if (config.SolveGame())
             {
-                Mushifier mushifier = new Mushifier();
+                ScrabbleGame game = new ScrabbleGame(config);
+                game.Load();
 
-                mushifier.MushifyDirectory(args.InputDirectory, args.OutputDirectory);
+                game.SolveGame(config.letters.ToLower());
             }
-
-            if (args.FindWords())
+            else if (config.FindWords())
             {
                 string inputLetters = config.letters;
                 inputLetters = inputLetters.ToLower();
@@ -50,13 +57,6 @@ namespace Source
                 }
                 Console.WriteLine("Letter count: " + inputLetters.Length);
                 Console.WriteLine(matches.Count + " possible words found");
-            }
-            else if (args.SolveGame())
-            {
-                ScrabbleGame game = new ScrabbleGame(config);
-                game.Load();
-
-                game.SolveGame(config.letters.ToLower());
             }
         }
     }
