@@ -7,15 +7,16 @@ public class ValueKeys
     public const string POWERUPS_FILE = "powerups";
     public const string LETTER_VALUES_FILE = "lettervalues";
     public const string GAMEBOARD_FILE = "gameboard";
+    public const string HELP = "help";
 
-    public static readonly Dictionary<char, string> keyLookup = new Dictionary<char, string>()
+    public static readonly Dictionary<char, (string, string)> keyLookup = new Dictionary<char, (string, string)>()
     { 
-        { 'l', LETTERS },
-        { 'm', MUSHES },
-        { 'P', MUSH_GROUP_PREFIX },
-        { 'S', MUSH_GROUP_SUFFIX },
-        { 'p', POWERUPS_FILE },
-        { 'L', LETTER_VALUES_FILE },
-        { 'g', GAMEBOARD_FILE },
+        { 'l', (LETTERS, "The letters to solve with. These are the letters you have on your rack and are available to play.") },
+        { 'm', (MUSHES, "The directory containing the mushed wordlists to load. These dictate what is counted as a valid word.") },
+        { 'P', (MUSH_GROUP_PREFIX, "Prefix for each file in the mush directory. Eg. 'list-' to find the file 'list-2'.") },
+        { 'S', (MUSH_GROUP_SUFFIX, "Suffix for each file in the mush directory. Eg. '.mush' to find the file '2.mush'.") },
+        { 'p', (POWERUPS_FILE, "The file containing the positions of each word and letter modifier on the Scrabble board.") },
+        { 'L', (LETTER_VALUES_FILE, "The file containing the scores of each letter.") },
+        { 'g', (GAMEBOARD_FILE, "The file containing the gameboard to load. If included the program will find the best word to play on this board. If omitted the program will list all words that can be made with your letters.") },
     };
 }

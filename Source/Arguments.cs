@@ -11,6 +11,8 @@ namespace Source
 
         private string[] commandArgs = new string[0];
 
+        public bool showHelp { get; internal set; } = false;
+
         private Config? config;
 
         public Arguments(string[] args)
@@ -18,6 +20,14 @@ namespace Source
             if (args != null)
             {
                 commandArgs = args;
+
+                foreach (string arg in args)
+                {
+                    if (arg == "--" + ValueKeys.HELP)
+                    {
+                        showHelp = true;
+                    }
+                }
             }
         }
 
@@ -46,12 +56,6 @@ namespace Source
             for (int i = 0; i < commandArgs.Length; i++)
             {
                 string arg = commandArgs[i];
-                // TODO Write this as documentation
-                // If no identifier use the next defaultParameterKey
-                // If - then single letter identifier (using a lookup table) check the length of the value
-                //  If its got extra characters, they are the value
-                //  Otherwise the next arg is the value
-                // If -- then a word, thats the key with the next arg being the next parameter
                 // TODO Allow specification of other config files to be loaded
 
                 if (arg.StartsWith("--"))
@@ -69,7 +73,7 @@ namespace Source
                 {
                     if (arg.Length >= 2)
                     {
-                        key = ValueKeys.keyLookup[arg[1]];
+                        (key, _) = ValueKeys.keyLookup[arg[1]];
                     }
                     else
                     {
@@ -105,7 +109,24 @@ namespace Source
             {
                 Console.WriteLine("Found key '" + key + "' with no associated value");
             }
+        }
 
+        public string getHelpMessage()
+        {
+            string message = "Scrabble Solver\nCopyright (c) 2024 Matthew Backhouse\n\n";
+
+            message += "Each long key name can also be used in a config file to specify a value, for example 'letters=hello'\n\n";
+            foreach (char key in ValueKeys.keyLookup.Keys)
+            {
+                (string longName, string description) = ValueKeys.keyLookup[key];
+
+                message += "-" + key + " --" + longName + " \t" + description + "\n";
+            }
+
+            message += "--help \tAccess this help dialogue on the useage of the application.\n";
+            message += "\nHappy Scrabbling :)";
+
+            return message;
         }
     }
 }

@@ -8,7 +8,14 @@ namespace Source
         {
             Arguments arguments = new Arguments(args);
 
-            RunProgram(arguments);
+            if (arguments.showHelp)
+            {
+                Console.WriteLine(arguments.getHelpMessage());
+            }
+            else 
+            {
+                RunProgram(arguments);
+            }
         }
 
         private static void RunProgram(Arguments args)
