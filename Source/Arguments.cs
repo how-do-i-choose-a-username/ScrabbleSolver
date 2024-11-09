@@ -52,11 +52,24 @@ namespace Source
 
             int defaultKeyID = 0;
             string key = "";
+            string arg;
+
+            void processKey()
+            {
+                if (key == ValueKeys.CONFIG)
+                {
+                    config.LoadConfigFile(arg);
+                }
+                else
+                {
+                    config.SetConfigValue(key, arg);
+                    key = "";
+                }
+            }
 
             for (int i = 0; i < commandArgs.Length; i++)
             {
-                string arg = commandArgs[i];
-                // TODO Allow specification of other config files to be loaded
+                arg = commandArgs[i];
 
                 if (arg.StartsWith("--"))
                 {
@@ -82,8 +95,7 @@ namespace Source
 
                     if (arg.Length >= 3)
                     {
-                        config.SetConfigValue(key, arg.Substring(2));
-                        key = "";
+                        processKey();
                     }
                 }
                 else if (string.IsNullOrEmpty(key))
@@ -100,12 +112,11 @@ namespace Source
                 }
                 else
                 {
-                    config.SetConfigValue(key, arg);
-                    key = "";
+                    processKey();
                 }
             }
 
-            if (string.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(key) && commandArgs.Length > 0)
             {
                 Console.WriteLine("Found key '" + key + "' with no associated value");
             }
