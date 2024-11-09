@@ -83,7 +83,7 @@ namespace Source
         {
             //  Create a new mush collection, and load it in
             MushCollection collection = new MushCollection();
-            collection.LoadMushes(config.path + config.mushGroupPrefix + mushGroup);
+            collection.LoadMushes(config.path + config.mushGroupPrefix + mushGroup + config.mushGroupSuffix);
 
             mushLists.Add(collection);
         }

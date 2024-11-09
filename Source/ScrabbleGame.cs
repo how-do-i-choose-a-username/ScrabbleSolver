@@ -61,6 +61,7 @@ namespace Scrabble
         {
             LoadScrabblePowerUps(config.powerUpsFile);
             LoadLetterScores(config.letterScoresFile);
+            LoadGameState(config.gameBoardFile);
         }
 
         public void LoadScrabblePowerUps(string powerUpsPath)
@@ -116,7 +117,7 @@ namespace Scrabble
             }
         }
 
-        public void LoadGameState(string path)
+        private void LoadGameState(string path)
         {
             using (var streamReader = new StreamReader(File.OpenRead(path)))
             {

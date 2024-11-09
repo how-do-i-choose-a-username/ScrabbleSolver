@@ -1,57 +1,19 @@
 ﻿using Scrabble;
-using CommandLine;
 
 namespace Source
 {
-    class Program
+    public class Program
     {
-        public class Arguments
-        {
-            [Option('l', HelpText = "Letters to process to find words with")]
-            public string Letters
-            {
-                get
-                {
-                    return lettersInternal;
-                }
-                set
-                {
-                    if (value.Length > 15)
-                    {
-                        lettersInternal = value.Substring(0, 15);
-                    }
-                    else
-                    {
-                        lettersInternal = value;
-                    }
-                }
-            }
-
-            private string lettersInternal = "";
-
-            [Option('b', HelpText = "Path to Scrabble board to load")]
-            public string Board { get; set; } = "";
-
-            [Option('i', HelpText = "Input directory with files for mushifying")]
-            public string InputDirectory { get; set; } = "";
-
-            [Option('o', HelpText = "Output directory to write files after mushifying")]
-            public string OutputDirectory { get; set; } = "";
-
-            public bool FindWords() => Letters.Length > 0 && Board == "";
-            public bool SolveGame() => Letters.Length > 0 && Board.Length > 0;
-            public bool MushifyDirectory() => InputDirectory.Length > 0 && OutputDirectory.Length > 0;
-        }
-
         static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<Arguments>(args).WithParsed<Arguments>(RunProgram);
+            Arguments arguments = new Arguments(args);
+
+            RunProgram(arguments);
         }
 
         private static void RunProgram(Arguments args)
         {
-            Config config = new Config();
-            config.LoadConfig();
+            Config config = args.ReadConfig();
 
             if (args.MushifyDirectory())
             {
@@ -62,7 +24,7 @@ namespace Source
 
             if (args.FindWords())
             {
-                string inputLetters = args.Letters;
+                string inputLetters = config.letters;
                 inputLetters = inputLetters.ToLower();
 
                 MushMatcher matcher = new MushMatcher(config);
@@ -94,9 +56,7 @@ namespace Source
                 ScrabbleGame game = new ScrabbleGame(config);
                 game.Load();
 
-                game.LoadGameState(args.Board);
-
-                game.SolveGame(args.Letters.ToLower());
+                game.SolveGame(config.letters.ToLower());
             }
         }
     }
