@@ -26,48 +26,30 @@ namespace Source
         {
             CheckLoadedMushCollections(word.Length);
 
-            List<string> mushNames = new();
+            List<Mush> mushes = new();
 
-            // If the word has a blank tile, generate all sub words
-            if (word.Contains(BLANK_TILE_INDICATOR))
+            if (findSubMatches)
             {
-                for (char letter = 'a'; letter <= 'z'; letter++)
+                foreach (string subWord in GetWordCombinations(word))
                 {
-                    int anyIndex = word.IndexOf(BLANK_TILE_INDICATOR);
-                    string newWord = word.Substring(0, anyIndex) + letter + word.Substring(Math.Min(anyIndex + 1, word.Length));
-                    List<string> newMatches = FindMatchStrings(newWord, findSubMatches, lettersMask);
-
-                    foreach (string match in newMatches)
-                    {
-                        if (!mushNames.Contains(match))
-                        {
-                            mushNames.Add(match);
-                        }
-                    }
+                    FindMatches(new Mush(subWord), mushes, lettersMask);
                 }
             }
-            // If it has no blank tile, operate as usual and find sub matches
             else
             {
-                List<Mush> mushes = new List<Mush>();
+                FindMatches(new Mush(word), mushes, lettersMask);
+            }
 
-                if (findSubMatches)
-                {
-                    foreach (string subWord in GetWordCombinations(word))
-                    {
-                        FindMatches(new Mush(subWord), mushes, lettersMask);
-                    }
-                }
-                else
-                {
-                    FindMatches(new Mush(word), mushes, lettersMask);
-                }
+            List<string> mushNames = new();
 
-                foreach (Mush mush in mushes)
+            foreach (Mush mush in mushes)
+            {
+                // Add this to the mush names list (may already be there due to blank letters)
+                string mushString = mush.ToString();
+                if (!mushNames.Contains(mushString))
                 {
-                    mushNames.Add(mush.ToString());
+                    mushNames.Add(mushString);
                 }
-
             }
 
             return mushNames;

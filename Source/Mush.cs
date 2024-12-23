@@ -21,6 +21,14 @@ namespace Source
         //  Eg. 'aardvark' would become '00100011' (truncated) and so on
         private Int16[] letters;
 
+        // Which of the mush letters are the mystical any letter tile
+        // Used when the user provides a blank scrabble tile
+        // Not presently stored or read from binary data
+        private Int16 anyLetter;
+
+        // How many any letters there are
+        private byte anyLetterCount;
+
         //  Indicates that this mush is invalid for some reason
         private bool badMush = false;
 
@@ -57,6 +65,9 @@ namespace Source
                     letterAmounts[i] = bytes[57 + i];
                 }
             }
+
+            anyLetter = 0;
+            anyLetterCount = 0;
         }
 
         /// <summary>
@@ -76,6 +87,10 @@ namespace Source
             letters = GetLettersArray(word);
 
             letterAmounts = GetLetterAmountsArray(word);
+
+            anyLetter = GetAnyLetters(word);
+
+            anyLetterCount = GetAnyLettersCount(word);
 
             length = (byte)word.Length;
         }
@@ -149,6 +164,50 @@ namespace Source
         }
 
         /// <summary>
+        /// Generate the bit field which indicates where the any letters are
+        /// </summary>
+        /// <param name="word"></param>
+        /// <returns></returns>
+        public static Int16 GetAnyLetters(string word)
+        {
+            Int16 letters = 0;
+
+            for (int i = 0; i < word.Length; i++)
+            {
+                char currentLetter = word[i];
+
+                if (currentLetter == MushMatcher.BLANK_TILE_INDICATOR)
+                {
+                    letters |= (Int16)(1 << i);
+                }
+            }
+
+            return letters;
+        }
+
+        /// <summary>
+        /// How many any letters are in this mush
+        /// </summary>
+        /// <param name="word"></param>
+        /// <returns></returns>
+        public static byte GetAnyLettersCount(string word)
+        {
+            byte count = 0;
+
+            for (int i = 0; i < word.Length; i++)
+            {
+                char currentLetter = word[i];
+
+                if (currentLetter == MushMatcher.BLANK_TILE_INDICATOR)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        /// <summary>
         /// Convert this mush back to a string for easier reading
         /// </summary>
         /// <returns></returns>
@@ -167,6 +226,15 @@ namespace Source
                     {
                         result[j] = (char)(i + 'a');
                     }
+                }
+            }
+
+            //  Also loop over the any letters and include those
+            for (int j = 0; j < maxWordLength; j++)
+            {
+                if (((anyLetter >>> j) & 1) != 0)
+                {
+                    result[j] = '_';
                 }
             }
 
@@ -221,7 +289,11 @@ namespace Source
         {
             int result = 0;
 
-            if (obj is Mush)
+            // If we have any blank letters match all words
+            // TODO Find a smarter way of implementing this
+
+            // The words are sorted to allow faster finding of words with relevant letters
+            if (anyLetterCount == 0 && obj is Mush)
             {
                 result = key.CompareTo(((Mush)obj).key);
             }
@@ -231,15 +303,38 @@ namespace Source
 
         //  Return true if both mushes have the same length, and the same letters
         //  Otherwise false
+        //  This supports blank letters only if this instance of the object is the only one with blank letters
         public bool HasCorrectLetters(Mush mushToCheck)
         {
             bool enough = true;
 
             if (mushToCheck.length == length)
             {
+                int availableAnyLetters = anyLetter;
+
                 for (int i = 0; i < letterCount && enough; i++)
                 {
-                    if (mushToCheck.letterAmounts[i] != letterAmounts[i])
+                    int checkAmount = mushToCheck.letterAmounts[i];
+                    int ourAmount = letterAmounts[i];
+
+                    // Perfect letter count match, we are happy
+                    if (checkAmount == ourAmount)
+                    {
+                        enough = true;
+                    }
+                    // Target has less than we do, fail
+                    else if (checkAmount < ourAmount)
+                    {
+                        enough = false;
+                    }
+                    // Target has more than us, but use our blank tiles to make the difference
+                    else if (checkAmount <= ourAmount + availableAnyLetters)
+                    {
+                        enough = true;
+                        availableAnyLetters -= checkAmount - ourAmount;
+                    }
+                    // Target has more than us and our any letters will allow
+                    else
                     {
                         enough = false;
                     }
