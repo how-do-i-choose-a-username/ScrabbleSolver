@@ -2,6 +2,8 @@ namespace Source
 {
     class MushMatcher
     {
+        public static readonly char BLANK_TILE_INDICATOR = '_';
+
         // Dictionary<int, MushCollection> mushLists;
         List<MushCollection> mushLists;
         Config config;
@@ -24,25 +26,48 @@ namespace Source
         {
             CheckLoadedMushCollections(word.Length);
 
-            List<Mush> mushes = new List<Mush>();
+            List<string> mushNames = new();
 
-            if (findSubMatches)
+            // If the word has a blank tile, generate all sub words
+            if (word.Contains(BLANK_TILE_INDICATOR))
             {
-                foreach (string subWord in GetWordCombinations(word))
+                for (char letter = 'a'; letter <= 'z'; letter++)
                 {
-                    FindMatches(new Mush(subWord), mushes, lettersMask);
+                    int anyIndex = word.IndexOf(BLANK_TILE_INDICATOR);
+                    string newWord = word.Substring(0, anyIndex) + letter + word.Substring(Math.Min(anyIndex + 1, word.Length));
+                    List<string> newMatches = FindMatchStrings(newWord, findSubMatches, lettersMask);
+
+                    foreach (string match in newMatches)
+                    {
+                        if (!mushNames.Contains(match))
+                        {
+                            mushNames.Add(match);
+                        }
+                    }
                 }
             }
+            // If it has no blank tile, operate as usual and find sub matches
             else
             {
-                FindMatches(new Mush(word), mushes, lettersMask);
-            }
+                List<Mush> mushes = new List<Mush>();
 
-            List<string> mushNames = new List<string>(mushes.Count);
+                if (findSubMatches)
+                {
+                    foreach (string subWord in GetWordCombinations(word))
+                    {
+                        FindMatches(new Mush(subWord), mushes, lettersMask);
+                    }
+                }
+                else
+                {
+                    FindMatches(new Mush(word), mushes, lettersMask);
+                }
 
-            foreach (Mush mush in mushes)
-            {
-                mushNames.Add(mush.ToString());
+                foreach (Mush mush in mushes)
+                {
+                    mushNames.Add(mush.ToString());
+                }
+
             }
 
             return mushNames;
@@ -55,10 +80,21 @@ namespace Source
             List<Mush> mushes = new List<Mush>();
             FindMatches(new Mush(word), mushes, null);
 
+            // Check if the provided word was found in the letters
             bool foundWord = false;
             for (int i = 0; i < mushes.Count && !foundWord; i++)
             {
-                foundWord = mushes[i].ToString() == word;
+                string mushString = mushes[i].ToString();
+
+                // Iterate through the letters in the word to check if they match
+                bool subWord = true;
+                for (int j = 0; j < mushString.Length && subWord; j++)
+                {
+                    // It must either be a blank tile or matching letter for a mush to match
+                    subWord = word[j] == BLANK_TILE_INDICATOR || mushString[j] == word[j];
+                }
+
+                foundWord = subWord;
             }
 
             return foundWord;
