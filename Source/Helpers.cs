@@ -1,5 +1,8 @@
 namespace Source
 {
+    /// <summary>
+    /// Sort strings by size, and then by contents
+    /// </summary>
     public class SortSizeLetters : IComparer<string>
     {
         int IComparer<string>.Compare(string? a, string? b)

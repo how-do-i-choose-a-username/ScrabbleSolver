@@ -154,7 +154,7 @@ namespace Source
                 {
                     result[currentLetter - 'a'] += 1;
                 }
-                else
+                else if (currentLetter != MushMatcher.BLANK_TILE_INDICATOR)
                 {
                     badMush = true;
                 }
@@ -310,7 +310,7 @@ namespace Source
 
             if (mushToCheck.length == length)
             {
-                int availableAnyLetters = anyLetter;
+                int availableAnyLetters = anyLetterCount;
 
                 for (int i = 0; i < letterCount && enough; i++)
                 {
@@ -362,6 +362,11 @@ namespace Source
             }
 
             return matchesMask;
+        }
+
+        public bool HasAnyLetters()
+        {
+            return anyLetterCount > 0;
         }
     }
 }

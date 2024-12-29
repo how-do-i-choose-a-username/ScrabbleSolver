@@ -27,24 +27,36 @@ namespace Source
 
         public void FindMushMatches(Mush mushToMatch, List<Mush> mushesFound, Int16[]? lettersMask)
         {
-            int itemIndex = mushes.BinarySearch(mushToMatch);
-
-            //  This mush is in the list of known mushes
-            if (itemIndex >= 0)
+            // If we have any letters, just check every word
+            if (mushToMatch.HasAnyLetters())
             {
-                AddIfValidAmounts(mushToMatch, mushes[itemIndex], mushesFound, lettersMask);
-
-                //  Loop backwards and forwards to catch any other matching mushes
-                //  Loop backwards 
-                for (int i = itemIndex - 1; i >= 0 && mushes[i].CompareTo(mushToMatch) == 0; i--)
+                for (int i = 0; i < mushes.Count; i++)
                 {
                     AddIfValidAmounts(mushToMatch, mushes[i], mushesFound, lettersMask);
                 }
+            }
+            // No any letters, use a smarter approach
+            else
+            {
+                int itemIndex = mushes.BinarySearch(mushToMatch);
 
-                //  Loop forwards
-                for (int i = itemIndex + 1; i < mushes.Count && mushes[i].CompareTo(mushToMatch) == 0; i++)
+                //  This mush is in the list of known mushes
+                if (itemIndex >= 0)
                 {
-                    AddIfValidAmounts(mushToMatch, mushes[i], mushesFound, lettersMask);
+                    AddIfValidAmounts(mushToMatch, mushes[itemIndex], mushesFound, lettersMask);
+
+                    //  Loop backwards and forwards to catch any other matching mushes
+                    //  Loop backwards 
+                    for (int i = itemIndex - 1; i >= 0 && mushes[i].CompareTo(mushToMatch) == 0; i--)
+                    {
+                        AddIfValidAmounts(mushToMatch, mushes[i], mushesFound, lettersMask);
+                    }
+
+                    //  Loop forwards
+                    for (int i = itemIndex + 1; i < mushes.Count && mushes[i].CompareTo(mushToMatch) == 0; i++)
+                    {
+                        AddIfValidAmounts(mushToMatch, mushes[i], mushesFound, lettersMask);
+                    }
                 }
             }
         }
