@@ -7,8 +7,10 @@ namespace Source
     {
         public bool FindWords() => !string.IsNullOrEmpty(letters) && !string.IsNullOrEmpty(mushesDirectory);
         public bool SolveGame() => FindWords() && !string.IsNullOrEmpty(gameBoardFile);
+        public bool MushifyDirectory() => !string.IsNullOrEmpty(mushSourceDirectory) && !string.IsNullOrEmpty(mushesDirectory);
 
-        public string letters {get; internal set;} = "";
+        public string letters { get; internal set; } = "";
+        public string mushSourceDirectory { get; internal set; } = "";
         public string mushesDirectory { get; internal set; } = "";
         public string mushGroupPrefix { get; internal set; } = "";
         public string mushGroupSuffix { get; internal set; } = "";
@@ -56,6 +58,9 @@ namespace Source
                     break;
                 case ValueKeys.MUSHES:
                     mushesDirectory = value;
+                    break;
+                case ValueKeys.MUSH_SOURCE_DIR:
+                    mushSourceDirectory = value;
                     break;
                 case ValueKeys.MUSH_GROUP_PREFIX:
                     mushGroupPrefix = value;

@@ -22,14 +22,13 @@ namespace Source
         {
             Config config = args.ReadConfig();
 
-            // The following commented code is to generate the mushed dictionary files
-            // I havent taken the time to update it to support the new command line interface
-            // if (args.MushifyDirectory())
-            // {
-            //     Mushifier mushifier = new Mushifier();
+            // Mush the dictionary files for faster use
+            if (config.MushifyDirectory())
+            {
+                Mushifier mushifier = new Mushifier();
 
-            //     mushifier.MushifyDirectory(args.InputDirectory, args.OutputDirectory);
-            // }
+                mushifier.MushifyDirectory(config.mushSourceDirectory, config.mushesDirectory);
+            }
 
             if (config.SolveGame())
             {

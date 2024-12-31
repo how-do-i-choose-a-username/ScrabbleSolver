@@ -35,7 +35,7 @@ namespace Source
         //  Overall length of word represented by the mush
         public byte length { get; internal set; }
 
-        //  How many of each letter there is
+        //  How many of each letter there is. 0 has a, 25 has z, etc.
         private byte[] letterAmounts;
 
         /// <summary>
@@ -308,6 +308,8 @@ namespace Source
         {
             bool enough = true;
 
+            string substitutedLetters = "";
+
             if (mushToCheck.length == length)
             {
                 int availableAnyLetters = anyLetterCount;
@@ -331,7 +333,15 @@ namespace Source
                     else if (checkAmount <= ourAmount + availableAnyLetters)
                     {
                         enough = true;
-                        availableAnyLetters -= checkAmount - ourAmount;
+                        int usedAnyLetters = checkAmount - ourAmount;
+                        availableAnyLetters -= usedAnyLetters;
+
+                        // This is not a great design, but should work well enough, considering that blank letters don't happen too often
+                        char toAdd = (char)('a' + i);
+                        for (int j = 0; j < usedAnyLetters; j++)
+                        {
+                            substitutedLetters += toAdd;
+                        }
                     }
                     // Target has more than us and our any letters will allow
                     else
