@@ -14,6 +14,8 @@ namespace Scrabble
     public class ScrabbleGame
     {
         private static readonly int boardDimensions = 15;
+        // Word must touch the centre tile if the board is blank
+        private static readonly int boardCentreAxis = 7;
         private static readonly char defaultBoardChar = ' ';
 
         //  All of these are y,x with 0,0 at the top left
@@ -21,6 +23,9 @@ namespace Scrabble
         private PowerUp[,] powerUps;
         private char[,] lettersOnBoard;
         private bool[,] blankLettersOnBoard;
+
+        // True if there is a letter anywhere on the board
+        private bool boardHasContents;
 
         private Dictionary<char, int> letterToScore = new Dictionary<char, int>();
 
@@ -147,11 +152,13 @@ namespace Scrabble
                             if (line[i] >= 'a' && line[i] <= 'z')
                             {
                                 lettersOnBoard[i, lineNumber] = line[i];
+                                boardHasContents = true;
                             }
                             else if (line[i] >= 'A' && line[i] <= 'Z')
                             {
                                 lettersOnBoard[i, lineNumber] = (char)(line[i] - ('A' - 'a'));
                                 blankLettersOnBoard[i, lineNumber] = true;
+                                boardHasContents = true;
                             }
                         }
 
@@ -278,8 +285,30 @@ namespace Scrabble
 
         private List<WordPosition> GenerateWordPositions(int letterCount)
         {
+            List<WordPosition> wordPositions;
+
+            if (boardHasContents)
+            {
+                wordPositions = GenerateWordPositionsContents(letterCount);
+            }
+            else
+            {
+                wordPositions = GenerateWordPositionsNoContents(letterCount);
+            }
+
+            return wordPositions;
+        }
+
+        /// <summary>
+        /// When the board has letters, find where on the board a word could be played
+        /// </summary>
+        /// <param name="letterCount"></param>
+        /// <returns></returns>
+        private List<WordPosition> GenerateWordPositionsContents(int letterCount)
+        {
             List<WordPosition> positions = new List<WordPosition>();
 
+            // Check both horizontal and vertical
             for (int dir = 0; dir < Math.Min(2, letterCount); dir++)
             {
                 for (int i = 0; i < boardDimensions; i++)
@@ -358,6 +387,7 @@ namespace Scrabble
 
                                 // This is a bit of a bandaid fix, and will not consider single letter moves. 
                                 // This is only an issue on the first turn of play, and is considered negligable
+                                // It will not occur in later moves since letters must be placed next to other letters
                                 if (initialPosition.length > 1)
                                 {
                                     positions.Add(initialPosition);
@@ -401,7 +431,102 @@ namespace Scrabble
             }
 
             return positions;
+        }
 
+        /// <summary>
+        /// When the board has nothing on it (i.e. the start of a game) generate word positions
+        /// </summary>
+        /// <param name="letterCount"></param>
+        /// <returns></returns>
+        private List<WordPosition> GenerateWordPositionsNoContents(int letterCount)
+        {
+            List<WordPosition> positions = new();
+
+            // Check both horizontal and vertical
+            for (int dir = 0; dir < Math.Min(2, letterCount); dir++)
+            {
+                // Board is blank, only check the centre axis
+                int i = boardCentreAxis;
+
+                int letterIndex = 0;
+                Coord[] placedLetters = new Coord[letterCount];
+
+                // Phase 1, place all letter positions on free tiles
+                for (int j = 0; j < boardDimensions && letterIndex < letterCount; j++)
+                {
+                    int x, y;
+                    if (dir == 0)
+                    {
+                        x = j;
+                        y = i;
+                    }
+                    else
+                    {
+                        x = i;
+                        y = j;
+                    }
+
+                    // No letters on the tile, always available
+                    placedLetters[letterIndex] = new Coord(x, y);
+                    letterIndex++;
+                }
+
+                // Phase 2, shuffle the letter positions along to get word positions
+                // Ensure we actually placed all of the letters on this row
+                if (letterIndex == letterCount)
+                {
+                    // Move the letter index back to the end of the array
+                    // Letter index points to the last element of the word sequence
+                    letterIndex--;
+
+                    bool runLoop = true;
+                    // Add word positions from the placed letters
+                    do
+                    {
+                        // Get the next array index (looping around to the start)
+                        int firstPosition = (letterIndex >= letterCount - 1) ? 0 : letterIndex + 1;
+                        int length = placedLetters[letterIndex][dir] - placedLetters[firstPosition][dir] + 1;
+
+                        // Check that the proposed word is a valid move to play i.e. touches the centre of the board
+                        bool validWordPosition = placedLetters.Contains(new Coord(boardCentreAxis, boardCentreAxis));
+
+                        if (validWordPosition)
+                        {
+                            WordPosition initialPosition = new WordPosition(placedLetters[firstPosition], length, letterCount, (WordDirection)dir);
+
+                            positions.Add(initialPosition);
+                        }
+
+                        // Move the last letter along
+                        int j = placedLetters[letterIndex][dir] + 1;
+
+                        // When we reach the edge of the board, stop the loop
+                        if (j >= boardDimensions)
+                        {
+                            runLoop = false;
+                        }
+                        else
+                        {
+                            int x, y;
+                            if (dir == 0)
+                            {
+                                x = j;
+                                y = i;
+                            }
+                            else
+                            {
+                                x = i;
+                                y = j;
+                            }
+
+                            placedLetters[firstPosition] = new Coord(x, y);
+                            letterIndex = firstPosition;
+                        }
+                    } while (runLoop);
+                }
+            }
+
+            return positions;
         }
 
         private string ExtractWordPositionFromBoard(WordPosition wordPosition)
