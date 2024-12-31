@@ -809,7 +809,7 @@ namespace Scrabble
                                     {
                                         Console.ForegroundColor = ConsoleColor.Magenta;
                                     }
-                                    toWrite = word[charIndex];
+                                    toWrite = (char)(word[charIndex] + (BlankLetterTile(new Coord(j, i)) ? 'A' - 'a' : 0));
                                     charIndex++;
                                 }
                                 else
