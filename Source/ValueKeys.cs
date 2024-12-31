@@ -8,6 +8,7 @@ public class ValueKeys
     public const string POWERUPS_FILE = "powerups";
     public const string LETTER_VALUES_FILE = "lettervalues";
     public const string GAMEBOARD_FILE = "gameboard";
+    public const string TILE_BAG_IS_EMPTY = "tilebag";
     public const string HELP = "help";
     public const string CONFIG = "config";
 
@@ -21,6 +22,7 @@ public class ValueKeys
         { 'p', (POWERUPS_FILE, "The file containing the positions of each word and letter modifier on the Scrabble board.") },
         { 'L', (LETTER_VALUES_FILE, "The file containing the scores of each letter.") },
         { 'g', (GAMEBOARD_FILE, "The file containing the gameboard to load. If included the program will find the best word to play on this board. If omitted the program will list all words that can be made with your letters.") },
+        { 't', (TILE_BAG_IS_EMPTY, "If the tile bag is empty account for the score bonus from going out first. Set this field to any non empty value to enable this behaviour.") },
         { 'c', (CONFIG, "The path to a config file to load. File will be loaded after the default config file, and in order of their appearance in the command. Not a valid option in a config file.") },
     };
 }

@@ -27,7 +27,11 @@ namespace Scrabble
         // True if there is a letter anywhere on the board
         private bool boardHasContents;
 
+        // Records how many points each letter is worth
         private Dictionary<char, int> letterToScore = new Dictionary<char, int>();
+
+        // Records how many of each letter there is
+        private Dictionary<char, int> letterCounts = new Dictionary<char, int>();
 
         private Config config;
 
@@ -128,6 +132,7 @@ namespace Scrabble
                         string[] parts = line.Split(" ");
 
                         letterToScore.Add(parts[0][0], Convert.ToInt32(parts[1]));
+                        letterCounts.Add(parts[0][0], Convert.ToInt32(parts[2]));
                     }
                 }
             }
@@ -185,6 +190,12 @@ namespace Scrabble
             Dictionary<int, ICollection<string>> letterCombos = MushMatcher.WordCombinationsByCount(letters);
 
             List<ScrabbleSolution> solutions = new List<ScrabbleSolution>();
+
+            int emptyBagBonus = 0;
+            if (config.EmptyTileBag())
+            {
+                emptyBagBonus = CalculateEmptyBagBonus(letters);
+            }
 
             for (int i = letters.Length; i > 0; i--)
             {
@@ -247,6 +258,12 @@ namespace Scrabble
                             if (i >= 7)
                             {
                                 score += 50;
+                            }
+                            
+                            // If the tile bag is empty, add a bonus for using all letters
+                            if (i == letters.Length && config.EmptyTileBag())
+                            {
+                                score += emptyBagBonus;
                             }
 
                             solutions.Add(new ScrabbleSolution(match, wordPosition, rawBoardLetters, score));
@@ -628,6 +645,61 @@ namespace Scrabble
             score *= wordMultiplier;
 
             return score;
+        }
+
+        /// <summary>
+        /// First player to go out when the bag is empty gets a bonus from the total score of everyone elses letters
+        /// Calculate what that bonus would be
+        /// </summary>
+        /// <param name="lettersInHand"></param>
+        /// <returns></returns>
+        private int CalculateEmptyBagBonus(string lettersInHand)
+        {
+            Dictionary<char, int> lettersRemaining = new();
+
+            // Initalise the starting letter counts
+            foreach (char key in letterCounts.Keys)
+            {
+                lettersRemaining[key] = letterCounts[key];
+            }
+
+            // Remove the letters we already have in our hand
+            for (int i = 0; i < lettersInHand.Length; i++)
+            {
+                lettersRemaining[lettersInHand[i]] -= 1;
+            }
+
+            // Remove the letters on the board
+            for (int i = 0; i < boardDimensions; i++)
+            {
+                for (int j = 0; j < boardDimensions; j++)
+                {
+                    if (blankLettersOnBoard[i, j])
+                    {
+                        lettersRemaining[MushMatcher.BLANK_TILE_INDICATOR] -= 1;
+                    }
+                    else if (lettersOnBoard[i, j] != defaultBoardChar)
+                    {
+                        lettersRemaining[lettersOnBoard[i, j]] -= 1;
+                    }
+                }
+            }
+
+            // Sum the total score
+            int sum = 0;
+            foreach (char key in lettersRemaining.Keys)
+            {
+                if (lettersRemaining[key] < 0)
+                {
+                    Console.WriteLine("Warning, when calculating the remaining letter sum, '" + key + "' was detected as being overused.");
+                }
+                else
+                {
+                    sum += lettersRemaining[key] * letterToScore[key];
+                }
+            }
+
+            return sum;
         }
 
         private WordPosition StretchWordPosToFill(WordPosition initialPosition)
