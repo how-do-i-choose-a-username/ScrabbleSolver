@@ -68,5 +68,16 @@ namespace Source
                 mushesFound.Add(matchedMush);
             }
         }
+
+        public void FindPatternMatches(Mush patternMush, List<Mush> mushesFound)
+        {
+            for (int i = 0; i < mushes.Count; i++)
+            {
+                if (mushes[i].HasMatchingPatterns(patternMush))
+                {
+                    mushesFound.Add(mushes[i]);
+                }
+            }
+        }
     }
 }

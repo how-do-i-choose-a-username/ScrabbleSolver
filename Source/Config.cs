@@ -7,8 +7,8 @@ namespace Source
     {
         public bool FindWords() => !string.IsNullOrEmpty(letters) && !string.IsNullOrEmpty(mushesDirectory);
         public bool SolveGame() => FindWords() && !string.IsNullOrEmpty(gameBoardFile);
+        public bool FindPatterns() => !string.IsNullOrEmpty(mushesDirectory) && !string.IsNullOrEmpty(wordPattern);
         public bool MushifyDirectory() => !string.IsNullOrEmpty(mushSourceDirectory) && !string.IsNullOrEmpty(mushesDirectory);
-
         public bool EmptyTileBag() => tileBagIsEmpty != "";
 
         public string letters { get; internal set; } = "";
@@ -20,6 +20,7 @@ namespace Source
         public string letterScoresFile { get; internal set; } = "lettervalues.config";
         public string gameBoardFile { get; internal set; } = "";
         public string tileBagIsEmpty { get; internal set; } = "";
+        public string wordPattern { get; internal set; } = "";
 
         public bool LoadConfigFile(string filePath)
         {
@@ -82,6 +83,9 @@ namespace Source
                     break;
                 case ValueKeys.TILE_BAG_IS_EMPTY:
                     tileBagIsEmpty = value;
+                    break;
+                case ValueKeys.WORD_PATTERN:
+                    wordPattern = value;
                     break;
                 default:
                     Console.WriteLine("Unknown key '" + key + "', its value '" + value + "' will be unused");

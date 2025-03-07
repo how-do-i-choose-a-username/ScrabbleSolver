@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace Source
 {
     /// <summary>
@@ -372,6 +374,23 @@ namespace Source
             }
 
             return matchesMask;
+        }
+
+        public bool HasMatchingPatterns(Mush mush)
+        {
+            bool hasMatchingPattern = true;
+
+            // Loop over each letter pattern
+            for (int i = 0; i < mush.letters.Length && hasMatchingPattern; i++)
+            {
+                // If the pattern has something in it
+                if (mush.letters[i] != 0)
+                {
+                    hasMatchingPattern = hasMatchingPattern && letters.Any(letter => letter == mush.letters[i]);
+                }
+            }
+
+            return hasMatchingPattern;
         }
 
         public bool HasAnyLetters()

@@ -40,6 +40,24 @@ namespace Source
                 FindMatches(new Mush(word), mushes, lettersMask);
             }
 
+            return MushListToStringList(mushes);
+        }
+
+        public List<string> FindMatchPatterns(string word)
+        {
+            CheckLoadedMushCollections(word.Length);
+
+            List<Mush> mushes = new();
+
+            Mush patternMush = new Mush(word);
+
+            mushLists[patternMush.length - 1].FindPatternMatches(patternMush, mushes);
+
+            return MushListToStringList(mushes);
+        }
+
+        private List<string> MushListToStringList(List<Mush> mushes)
+        {
             List<string> mushNames = new();
 
             foreach (Mush mush in mushes)

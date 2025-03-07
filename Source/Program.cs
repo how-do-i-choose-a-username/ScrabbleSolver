@@ -37,6 +37,21 @@ namespace Source
 
                 game.SolveGame(config.letters.ToLower());
             }
+            else if (config.FindPatterns())
+            {
+                string patternLetters = config.wordPattern;
+                patternLetters = patternLetters.ToLower();
+
+                MushMatcher matcher = new MushMatcher(config);
+
+                List<string> matchPatterns = matcher.FindMatchPatterns(patternLetters);
+
+                Console.WriteLine("Words found with matching patterns");
+                foreach (var match in matchPatterns)
+                {
+                    Console.WriteLine(match);
+                }
+            }
             else if (config.FindWords())
             {
                 string inputLetters = config.letters;
