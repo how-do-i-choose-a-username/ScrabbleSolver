@@ -1,4 +1,4 @@
-namespace Source
+namespace Scrabble
 {
     /// <summary>
     /// Accepts a directory of word lists. Mushifies them and saves the resulting mushes

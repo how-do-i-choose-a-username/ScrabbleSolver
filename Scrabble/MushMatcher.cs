@@ -1,4 +1,4 @@
-namespace Source
+namespace Scrabble
 {
     class MushMatcher
     {

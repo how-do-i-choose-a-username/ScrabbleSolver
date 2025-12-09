@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace Source
+namespace Scrabble
 {
     /// <summary>
     /// Class to convert strings to mush, and back out again

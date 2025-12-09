@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Source;
+using Scrabble;
 
 namespace Scrabble
 {

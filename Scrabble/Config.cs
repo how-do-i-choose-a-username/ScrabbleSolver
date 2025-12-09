@@ -1,4 +1,4 @@
-namespace Source
+namespace Scrabble
 {
     /// <summary>
     /// Config file which specifies where to load other information from, and includes details about how the program should be run.

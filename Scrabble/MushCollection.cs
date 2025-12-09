@@ -1,4 +1,4 @@
-namespace Source
+namespace Scrabble
 {
     /// <summary>
     /// Collection of mushes. Eg all 3 letter mushes
